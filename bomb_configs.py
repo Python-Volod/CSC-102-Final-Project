@@ -220,3 +220,4 @@ boot_text = f"Booting...\n\x00\x00"\
             f"*{' '.join(ascii_uppercase)}\n"\
             f"*{' '.join([str(n % 10) for n in range(26)])}\n"\
             f"Rendering phases...\x00"
+
