@@ -304,8 +304,6 @@ class Toggles(PhaseThread):
         # TODO
         pass
 
-print("Test")
-
     # returns the toggle switches state as a string
     def __str__(self):
         if (self._defused):
