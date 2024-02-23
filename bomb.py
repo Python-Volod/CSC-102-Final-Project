@@ -1,7 +1,7 @@
 #################################
 # CSC 102 Defuse the Bomb Project
 # Main program
-# Team: Joseph DiMartino
+# Team: Joseph DiMartino, Volodymyr, Sebastian
 #################################
 
 # import the configs
