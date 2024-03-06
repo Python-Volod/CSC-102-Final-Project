@@ -312,3 +312,4 @@ class Toggles(PhaseThread):
             # TODO
             pass
 
+print("test")
