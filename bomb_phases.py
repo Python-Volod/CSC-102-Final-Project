@@ -20,6 +20,7 @@ import sys
 #########
 # the LCD display GUI
 class Lcd(Frame):
+    pygame.init()
     def __init__(self, window):
         super().__init__(window, bg="black")
         # make the GUI fullscreen
@@ -154,9 +155,8 @@ class Timer(PhaseThread):
         self._sec = ""
         # by default, each tick is 1 second
         self._interval = 1
-
     # runs the thread
-    def run(self):
+    def run_t(self):
         self._running = True
         while (self._running):
             if (not self._paused):
@@ -171,6 +171,11 @@ class Timer(PhaseThread):
                 self._value -= 1
             else:
                 sleep(0.1)
+    thread_sound = Thread(target=run_sound)
+    thread_timer = Thread(target = run_t)
+    def run(self):
+        thread_sound.start("radiation_sound.mp3")
+        thread_timer.start()
 
     # updates the timer (only internally called)
     def _update(self):

@@ -16,6 +16,7 @@ NUM_PHASES = 4       # the total number of initial active bomb phases
 # imports
 from random import randint, shuffle, choice
 from string import ascii_uppercase
+import pygame
 if (RPi):
     import board
     from adafruit_ht16k33.segments import Seg7x4
@@ -173,6 +174,12 @@ def genKeypadCombination():
     combination = digits(passphrase)
 
     return keyword, cipher_keyword, rot, combination, passphrase
+
+def run_sound(sound_name, speed_mult):
+    pygame.mixer.music.load("sounds/" + sound_name)
+    pygame.mixer.init.frequency = 44.1 * 2.5 * speed_mult
+    pygame.set_volume(100)
+    pygame.mixer.music.play(8)
 
 ###############################
 # generate the bomb's specifics
