@@ -174,7 +174,7 @@ class Timer(PhaseThread):
     thread_sound = Thread(target=run_sound)
     thread_timer = Thread(target = run_t)
     def run(self):
-        thread_sound.start("radiation_sound.mp3")
+        thread_sound.start("radiation_sound.mp3", 1)
         thread_timer.start()
 
     # updates the timer (only internally called)
