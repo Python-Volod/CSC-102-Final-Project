@@ -306,9 +306,28 @@ class Toggles(PhaseThread):
         super().__init__(name, component, target)
 
     # runs the thread
-    def run(self):
-        # TODO
-        pass
+    def run(self): #this may not work tbh but no error 
+        self._running = True
+        while (self._running):
+            # process toggles when toggle on/off
+            if (self._component.toggles):
+                
+                while (self._component.toggles):
+                    try:
+                        # just grab the first key pressed if more than one were pressed
+                        key = self._component.toggles[0]
+                    except:
+                        key = "1111"
+                    sleep(0.1)
+                # log the key
+                self._value += str(key)
+                # the combination is correct -> phase defused
+                if (self._value == self._target):
+                    self._defused = True
+                # the combination is incorrect -> phase failed (strike)
+                elif (self._value != self._target[0:len(self._value)]):
+                    self._failed = True
+            sleep(0.1)
 
     # returns the toggle switches state as a string
     def __str__(self):
