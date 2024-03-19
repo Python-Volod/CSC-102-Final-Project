@@ -228,12 +228,19 @@ class Keypad(PhaseThread):
 # the jumper wires phase
 class Wires(PhaseThread):
     def __init__(self, component, target, name="Wires"):
-        super().__init__(name, component, target)
+        super().__init__(name, component, target) #Reciving component_wires, wires_target
+        #The origin value of component_wires are pins from (board.D14, board.D15, board.D18, board.D23, board.D24)
+        #The origin value of wires_target is genSerial() for example  'ABCDE' 
+        
+        #Connected set as 0
+        self._connected = False
+        #Disconnected set as 1
+        self._disconnected = True
 
     # runs the thread
     def run(self):
-        # TODO
-        pass
+
+
 
     # returns the jumper wires state as a string
     def __str__(self):
