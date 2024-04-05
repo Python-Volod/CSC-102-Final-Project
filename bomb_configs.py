@@ -15,6 +15,7 @@ NUM_PHASES = 4       # the total number of initial active bomb phases
 
 # imports
 from random import randint, shuffle, choice
+import pygame
 from string import ascii_uppercase
 if (RPi):
     import board
