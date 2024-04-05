@@ -171,6 +171,7 @@ class Timer(PhaseThread):
                 self._value -= 1
             else:
                 sleep(0.1)
+    global thread_sound, thread_timer
     thread_sound = Thread(target=run_sound)
     thread_timer = Thread(target = run_t)
     def run(self):
