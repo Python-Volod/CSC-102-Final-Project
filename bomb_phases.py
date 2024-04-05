@@ -236,7 +236,7 @@ class Keypad(PhaseThread):
 class Wires(PhaseThread):
     def __init__(self, component, target, name="Wires"):
         super().__init__(name, component, target)
-
+        print(self.name, self._component, self._target)
     # runs the thread
     def run(self):
         # TODO
