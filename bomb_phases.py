@@ -3,6 +3,7 @@
 # GUI and Phase class definitions
 # Team: 
 #################################
+import pygame
 
 # import the configs
 from bomb_configs import *
@@ -307,7 +308,7 @@ class Toggles(PhaseThread):
         super().__init__(name, component, target)
 
     # runs the thread
-    def run(self): #this may not work tbh but no error 
+    def run(self): #this may not work tbh but no error
         self._running = True
         while (self._running):
             # process toggles when toggle on/off

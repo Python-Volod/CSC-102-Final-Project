@@ -17,6 +17,7 @@ NUM_PHASES = 4       # the total number of initial active bomb phases
 from random import randint, shuffle, choice
 import pygame
 from string import ascii_uppercase
+import pygame
 if (RPi):
     import board
     from adafruit_ht16k33.segments import Seg7x4
