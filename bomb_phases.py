@@ -3,6 +3,7 @@
 # GUI and Phase class definitions
 # Team: 
 #################################
+import tkinter.ttk
 import pygame
 
 # import the configs
@@ -15,7 +16,6 @@ from time import sleep
 import os
 import sys
 
-
 #########
 # classes
 #########
@@ -26,6 +26,15 @@ class Lcd(Frame):
         super().__init__(window, bg="black")
         # make the GUI fullscreen
         window.attributes("-fullscreen", True)
+        #create two main tabs of GUI, one for general information and the other is for RSA decryption
+        self.grid(row=0, column=0)
+        # Setup two main tabs
+        self.tabs = tkinter.ttk.Notebook(self)
+        self.main_tab = tkinter.ttk.Frame(self.tabs)
+        self.rsa_tab = tkinter.ttk.Frame(self.tabs)
+        self.tabs.add(self.main_tab, text="MAIN")
+        self.tabs.add(self.rsa_tab, text="RSA")
+        self.tabs.grid(row=0, column=2, columnspan=3, sticky = N)
         # we need to know about the timer (7-segment display) to be able to pause/unpause it
         self._timer = None
         # we need to know about the pushbutton to turn off its LED when the program exits
@@ -36,41 +45,141 @@ class Lcd(Frame):
     # sets up the LCD "boot" GUI
     def setupBoot(self):
         # set column weights
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=2)
-        self.columnconfigure(2, weight=1)
+        self.main_tab.columnconfigure(0, weight=1)
+        self.main_tab.columnconfigure(1, weight=2)
+        self.main_tab.columnconfigure(2, weight=1)
         # the scrolling informative "boot" text
-        self._lscroll = Label(self, bg="black", fg="white", font=("Courier New", 14), text="", justify=LEFT)
+        self._lscroll = Label(self.main_tab, bg="black", fg="white", font=("Courier New", 14), text="", justify=LEFT)
         self._lscroll.grid(row=0, column=0, columnspan=3, sticky=W)
         self.pack(fill=BOTH, expand=True)
 
     # sets up the LCD GUI
     def setup(self):
+        # Setup the main_tab
         # the timer
-        self._ltimer = Label(self, bg="black", fg="#00ff00", font=("Courier New", 18), text="Time left: ")
+        self._ltimer = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Time left: ")
         self._ltimer.grid(row=1, column=0, columnspan=3, sticky=W)
         # the keypad passphrase
-        self._lkeypad = Label(self, bg="black", fg="#00ff00", font=("Courier New", 18), text="Keypad phase: ")
+        self._lkeypad = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Keypad phase: ")
         self._lkeypad.grid(row=2, column=0, columnspan=3, sticky=W)
         # the jumper wires status
-        self._lwires = Label(self, bg="black", fg="#00ff00", font=("Courier New", 18), text="Wires phase: ")
+        self._lwires = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Wires phase: ")
         self._lwires.grid(row=3, column=0, columnspan=3, sticky=W)
         # the pushbutton status
-        self._lbutton = Label(self, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
+        self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
         self._lbutton.grid(row=4, column=0, columnspan=3, sticky=W)
         # the toggle switches status
-        self._ltoggles = Label(self, bg="black", fg="#00ff00", font=("Courier New", 18), text="Toggles phase: ")
+        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Toggles phase: ")
         self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
         # the strikes left
-        self._lstrikes = Label(self, bg="black", fg="#00ff00", font=("Courier New", 18), text="Strikes left: ")
+        self._lstrikes = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Strikes left: ")
         self._lstrikes.grid(row=5, column=2, sticky=W)
         if (SHOW_BUTTONS):
             # the pause button (pauses the timer)
-            self._bpause = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 18), text="Pause", anchor=CENTER, command=self.pause)
+            self._bpause = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Pause", anchor=CENTER, command=self.pause)
             self._bpause.grid(row=6, column=0, pady=40)
             # the quit button
-            self._bquit = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 18), text="Quit", anchor=CENTER, command=self.quit)
+            self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit", anchor=CENTER, command=self.quit)
             self._bquit.grid(row=6, column=2, pady=40)
+        # Setup the RSA tab 
+        # Main function for the RSA that decrypts using user entered values 
+        # created created with help of Chat GPT
+        def decrypt_rsa():
+            ciphertext = int(self.c_entry.get())
+            p = int(self.p_entry.get())
+            q = int(self.q_entry.get())
+            e = int(self.e_entry.get())
+            def egcd(a, b):
+                if a == 0:
+                    return (b, 0, 1)
+                else:
+                    g, y, x = egcd(b % a, a)
+                    return (g, x - (b // a) * y, y)
+            def modinv(a, m):
+                g, x, y = egcd(a, m)
+                if g != 1:
+                    self.main_label.configure(text = 'Error occured try again')
+                    return 0
+                else:
+                    return x % m
+            n = p * q
+            phi = (p - 1) * (q - 1)
+            d = modinv(e, phi)
+            try:
+                plaintext = pow(ciphertext, d, n)
+                print(plaintext)
+            except:
+                self.main_label.configure(text = 'Error occured try again')
+            self.main_label.configure(text = "The key is {}".format(chr(plaintext)))
+        # Feedback for the user
+        self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="green", anchor=CENTER)
+        self.main_label.grid(row = 0, column=0)
+        # Fields for user to enter values and button to decode using the given information
+        text_c= StringVar()
+        text_c.set('Enter the C-value')
+        text_e= StringVar()
+        text_e.set('Enter the E-value')
+        text_p= StringVar()
+        text_p.set('Enter the P-value')
+        text_q = StringVar()
+        text_q.set('Enter the Q-value')
+        self.c_entry = Entry(self.rsa_tab,fg="green",textvariable=text_c)
+        self.e_entry = Entry(self.rsa_tab,fg="green",textvariable=text_e)
+        self.p_entry = Entry(self.rsa_tab,fg="green",textvariable=text_p)
+        self.q_entry = Entry(self.rsa_tab,fg="green",textvariable=text_q)
+        self.decode_button = Button(self.rsa_tab, text = "Decode", command=decrypt_rsa)
+        self.c_entry.grid(row=1,column=0, pady=5)
+        self.e_entry.grid(row=2,column=0, pady=5)
+        self.p_entry.grid(row=3,column=0, pady=5)
+        self.q_entry.grid(row=4,column=0, pady=5)
+        self.decode_button.grid(row=5, column=0, pady=10)
+        # Create events so that the empty entry fields would show what values they excpect 
+        def _erase_c_entry(event):
+            if self.c_entry.get() == "Enter the C-value":
+                text_c.set("")
+        def _erase_e_entry(event):
+            if self.e_entry.get() == "Enter the E-value":
+                text_e.set("")
+        def _erase_p_entry(event):
+            if self.p_entry.get() == "Enter the P-value":
+                text_p.set("")
+        def _erase_q_entry(event):
+            if self.q_entry.get() == "Enter the Q-value":
+                text_q.set("")
+
+        def _redraw_c_entry(event):
+            if self.c_entry.get() == "":
+                text_c.set('Enter the C-value')
+        def _redraw_e_entry(event):
+            if self.e_entry.get() == "":
+                text_e.set('Enter the E-value')
+        def _redraw_p_entry(event):
+            if self.p_entry.get() == "":
+                text_p.set('Enter the P-value')
+        def _redraw_q_entry(event):
+            if self.q_entry.get() == "":
+                text_q.set('Enter the Q-value')
+
+        self.c_entry.bind("<ButtonRelease-1>", _erase_c_entry)
+        self.e_entry.bind("<ButtonRelease-1>", _erase_e_entry)
+        self.p_entry.bind("<ButtonRelease-1>", _erase_p_entry)
+        self.q_entry.bind("<ButtonRelease-1>", _erase_q_entry)
+
+        self.c_entry.bind("<ButtonRelease-2>", _erase_c_entry)
+        self.e_entry.bind("<ButtonRelease-2>", _erase_e_entry)
+        self.p_entry.bind("<ButtonRelease-2>", _erase_p_entry)
+        self.q_entry.bind("<ButtonRelease-2>", _erase_q_entry)
+
+        self.c_entry.bind("<ButtonRelease-3>", _erase_c_entry)
+        self.e_entry.bind("<ButtonRelease-3>", _erase_e_entry)
+        self.p_entry.bind("<ButtonRelease-3>", _erase_p_entry)
+        self.q_entry.bind("<ButtonRelease-3>", _erase_q_entry)
+
+        self.c_entry.bind("<FocusOut>", _redraw_c_entry)
+        self.e_entry.bind("<FocusOut>", _redraw_e_entry)
+        self.p_entry.bind("<FocusOut>", _redraw_p_entry)
+        self.q_entry.bind("<FocusOut>", _redraw_q_entry)
+
 
     # lets us pause/unpause the timer (7-segment display)
     def setTimer(self, timer):
@@ -101,10 +210,10 @@ class Lcd(Frame):
 
         # reconfigure the GUI
         # the retry button
-        self._bretry = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 18), text="Retry", anchor=CENTER, command=self.retry)
+        self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry", anchor=CENTER, command=self.retry)
         self._bretry.grid(row=1, column=0, pady=40)
         # the quit button
-        self._bquit = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 18), text="Quit", anchor=CENTER, command=self.quit)
+        self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit", anchor=CENTER, command=self.quit)
         self._bquit.grid(row=1, column=2, pady=40)
 
     # re-attempts the bomb (after an explosion or a successful defusion)
