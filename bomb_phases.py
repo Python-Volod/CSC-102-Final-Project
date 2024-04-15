@@ -26,15 +26,6 @@ class Lcd(Frame):
         super().__init__(window, bg="black")
         # make the GUI fullscreen
         window.attributes("-fullscreen", True)
-        #create two main tabs of GUI, one for general information and the other is for RSA decryption
-        self.grid(row=0, column=0)
-        # Setup two main tabs
-        self.tabs = tkinter.ttk.Notebook(self)
-        self.main_tab = tkinter.ttk.Frame(self.tabs)
-        self.rsa_tab = tkinter.ttk.Frame(self.tabs)
-        self.tabs.add(self.main_tab, text="MAIN")
-        self.tabs.add(self.rsa_tab, text="RSA")
-        self.tabs.grid(row=0, column=2, columnspan=3, sticky = N)
         # we need to know about the timer (7-segment display) to be able to pause/unpause it
         self._timer = None
         # we need to know about the pushbutton to turn off its LED when the program exits
@@ -45,6 +36,13 @@ class Lcd(Frame):
     # sets up the LCD "boot" GUI
     def setupBoot(self):
         # set column weights
+        #create two main tabs of GUI, one for general information and the other is for RSA decryption
+        self.tabs = tkinter.ttk.Notebook(self)
+        self.main_tab = tkinter.ttk.Frame(self.tabs)
+        self.rsa_tab = tkinter.ttk.Frame(self.tabs)
+        self.tabs.add(self.main_tab, text="MAIN")
+        self.tabs.add(self.rsa_tab, text="RSA")
+        self.tabs.grid(row=0, column=2, sticky = N)
         self.main_tab.columnconfigure(0, weight=1)
         self.main_tab.columnconfigure(1, weight=2)
         self.main_tab.columnconfigure(2, weight=1)
@@ -127,7 +125,7 @@ class Lcd(Frame):
         self.e_entry = Entry(self.rsa_tab,fg="green",textvariable=text_e)
         self.p_entry = Entry(self.rsa_tab,fg="green",textvariable=text_p)
         self.q_entry = Entry(self.rsa_tab,fg="green",textvariable=text_q)
-        self.decode_button = Button(self.rsa_tab, text = "Decode", command=decrypt_rsa)
+        self.decode_button = tkinter.Button(self.rsa_tab, text = "Decode", command=decrypt_rsa)
         self.c_entry.grid(row=1,column=0, pady=5)
         self.e_entry.grid(row=2,column=0, pady=5)
         self.p_entry.grid(row=3,column=0, pady=5)
