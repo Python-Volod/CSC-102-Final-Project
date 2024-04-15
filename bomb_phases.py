@@ -306,9 +306,8 @@ class Button(PhaseThread):
 class Toggles(PhaseThread):
     def __init__(self, component, target, name="Toggles"):
         super().__init__(name, component, target)
-
     # runs the thread
-    def run(self): #this may not work tbh but no error
+    def run(self):
         self._running = True
         while (self._running):
             # process toggles when toggle on/off
@@ -338,5 +337,3 @@ class Toggles(PhaseThread):
         else:
             # TODO
             pass
-
-print("test")
