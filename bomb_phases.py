@@ -312,7 +312,7 @@ class Toggles(PhaseThread):
         while (self._running):
             # process toggles when toggle on/off
             if (self._component.toggles):
-                
+                '''
                 while (self._component.toggles):
                     try:
                         # just grab the first key pressed if more than one were pressed
@@ -322,8 +322,9 @@ class Toggles(PhaseThread):
                     sleep(0.1)
                 # log the key
                 self._value += str(key)
+                '''
                 # the combination is correct -> phase defused
-                if (self._value == self._target):
+                if (self._value == self._target) and button_color != "B": #correct combination + check if button target is correct
                     self._defused = True
                 # the combination is incorrect -> phase failed (strike)
                 elif (self._value != self._target[0:len(self._value)]):
