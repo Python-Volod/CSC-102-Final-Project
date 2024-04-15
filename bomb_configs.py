@@ -177,8 +177,7 @@ def genKeypadCombination():
     return keyword, cipher_keyword, rot, combination, passphrase
 
 def run_sound(sound_name, speed_mult = 1):
-    #Loading the radiation sound
-    pygame.mixer.music.load("sounds/radiation_sound.mp3" + sound_name)
+    pygame.mixer.music.load("sounds/" + sound_name)
     pygame.mixer.init.frequency = 44.1 * 2.5 * speed_mult
     pygame.set_volume(100)
     pygame.mixer.music.play(8)
