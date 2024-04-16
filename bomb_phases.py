@@ -38,8 +38,8 @@ class Lcd(Frame):
         # set column weights
         #create two main tabs of GUI, one for general information and the other is for RSA decryption
         self.tabs = tkinter.ttk.Notebook(self)
-        self.main_tab = tkinter.ttk.Frame(self.tabs)
-        self.rsa_tab = tkinter.ttk.Frame(self.tabs)
+        self.main_tab = tkinter.Frame(self.tabs, bg="black")
+        self.rsa_tab = tkinter.Frame(self.tabs, bg = "black")
         self.tabs.add(self.main_tab, text="MAIN")
         self.tabs.add(self.rsa_tab, text="RSA")
         self.tabs.grid(row=0, column=2, sticky = N)
@@ -47,7 +47,7 @@ class Lcd(Frame):
         self.main_tab.columnconfigure(1, weight=2)
         self.main_tab.columnconfigure(2, weight=1)
         # the scrolling informative "boot" text
-        self._lscroll = Label(self.main_tab, bg="black", fg="white", font=("Courier New", 14), text="", justify=LEFT)
+        self._lscroll = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="", justify=LEFT)
         self._lscroll.grid(row=0, column=0, columnspan=3, sticky=W)
         self.pack(fill=BOTH, expand=True)
 
@@ -279,12 +279,6 @@ class Timer(PhaseThread):
                 self._value -= 1
             else:
                 sleep(0.1)
-    global thread_sound, thread_timer
-    thread_sound = Thread(target=run_sound)
-    thread_timer = Thread(target = run_t)
-    def run(self):
-        thread_sound.start("radiation_sound.mp3", 1)
-        thread_timer.start()
 
     # updates the timer (only internally called)
     def _update(self):
@@ -416,10 +410,11 @@ class Toggles(PhaseThread):
     # runs the thread
     def run(self):
         self._running = True
+        self._value = ""
         while (self._running):
             # process toggles when toggle on/off
-            if (self._component.toggles):
-                '''
+            # if (self._component.toggles):
+                '''   
                 while (self._component.toggles):
                     try:
                         # just grab the first key pressed if more than one were pressed
@@ -436,7 +431,7 @@ class Toggles(PhaseThread):
                 # the combination is incorrect -> phase failed (strike)
                 elif (self._value != self._target[0:len(self._value)]):
                     self._failed = True
-            sleep(0.1)
+        sleep(0.1)
 
     # returns the toggle switches state as a string
     def __str__(self):
@@ -445,3 +440,4 @@ class Toggles(PhaseThread):
         else:
             # TODO
             pass
+
