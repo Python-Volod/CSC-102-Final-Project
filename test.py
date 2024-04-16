@@ -41,7 +41,7 @@ class Main(ttk.Frame):
         self.rsa_tab = ttk.Frame(self.tabs)
         self.tabs.add(self.main_tab, text="MAIN")
         self.tabs.add(self.rsa_tab, text="RSA")
-        self.tabs.grid(row=0, column=0, )
+        self.tabs.grid(row=0, column=0)
         
 
         # Setup main tab
