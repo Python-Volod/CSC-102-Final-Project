@@ -442,5 +442,5 @@ class Toggles(PhaseThread):
         if (self._defused):
             return "DEFUSED"
         else:
+            return "ARMED"
             # TODO
-            pass
