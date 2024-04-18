@@ -42,7 +42,7 @@ class Lcd(Frame):
         self.rsa_tab = tkinter.Frame(self.tabs, bg = "black")
         self.tabs.add(self.main_tab, text="MAIN")
         self.tabs.add(self.rsa_tab, text="RSA")
-        self.tabs.grid(row=0, column=2, sticky = N)
+        self.tabs.pack(fill=BOTH, expand=1)
         self.main_tab.columnconfigure(0, weight=1)
         self.main_tab.columnconfigure(1, weight=2)
         self.main_tab.columnconfigure(2, weight=1)
@@ -110,8 +110,8 @@ class Lcd(Frame):
                 self.main_label.configure(text = 'Error occured try again')
             self.main_label.configure(text = "The key is {}".format(chr(plaintext)))
         # Feedback for the user
-        self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="green", anchor=CENTER)
-        self.main_label.grid(row = 0, column=0)
+        self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="green", anchor=CENTER, font=("Courier New", 18))
+        self.main_label.place(relx=0.5, rely=0.1, anchor=CENTER)
         # Fields for user to enter values and button to decode using the given information
         text_c= StringVar()
         text_c.set('Enter the C-value')
@@ -121,16 +121,16 @@ class Lcd(Frame):
         text_p.set('Enter the P-value')
         text_q = StringVar()
         text_q.set('Enter the Q-value')
-        self.c_entry = Entry(self.rsa_tab,fg="green",textvariable=text_c)
-        self.e_entry = Entry(self.rsa_tab,fg="green",textvariable=text_e)
-        self.p_entry = Entry(self.rsa_tab,fg="green",textvariable=text_p)
-        self.q_entry = Entry(self.rsa_tab,fg="green",textvariable=text_q)
-        self.decode_button = tkinter.Button(self.rsa_tab, text = "Decode", command=decrypt_rsa)
-        self.c_entry.grid(row=1,column=0, pady=5)
-        self.e_entry.grid(row=2,column=0, pady=5)
-        self.p_entry.grid(row=3,column=0, pady=5)
-        self.q_entry.grid(row=4,column=0, pady=5)
-        self.decode_button.grid(row=5, column=0, pady=10)
+        self.c_entry = Entry(self.rsa_tab,fg="green",textvariable=text_c, font=("Courier New", 18))
+        self.e_entry = Entry(self.rsa_tab,fg="green",textvariable=text_e, font=("Courier New", 18))
+        self.p_entry = Entry(self.rsa_tab,fg="green",textvariable=text_p, font=("Courier New", 18))
+        self.q_entry = Entry(self.rsa_tab,fg="green",textvariable=text_q, font=("Courier New", 18))
+        self.decode_button = tkinter.Button(self.rsa_tab, text = "Decode", command=decrypt_rsa, font=("Courier New", 18))
+        self.c_entry.place(relx=0.5, rely=0.25, anchor=CENTER)
+        self.e_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
+        self.p_entry.place(relx=0.5, rely=0.55, anchor=CENTER)
+        self.q_entry.place(relx=0.5, rely=0.7, anchor=CENTER)
+        self.decode_button.place(relx=0.5, rely=0.9, anchor=CENTER)
         # Create events so that the empty entry fields would show what values they excpect 
         def _erase_c_entry(event):
             if self.c_entry.get() == "Enter the C-value":
@@ -253,7 +253,10 @@ class PhaseThread(Thread):
 # the timer phase
 class Timer(PhaseThread):
     def __init__(self, component, initial_value, name="Timer"):
+        print("CALL WAS HEARD")
+        print(initial_value)
         super().__init__(name, component)
+        print(initial_value)
         # the default value is the specified initial value
         self._value = initial_value
         # is the timer paused?
@@ -264,7 +267,7 @@ class Timer(PhaseThread):
         # by default, each tick is 1 second
         self._interval = 1
     # runs the thread
-    def run_t(self):
+    def run(self):
         self._running = True
         while (self._running):
             if (not self._paused):
@@ -275,6 +278,7 @@ class Timer(PhaseThread):
                 sleep(self._interval)
                 # the timer has expired -> phase failed (explode)
                 if (self._value == 0):
+                    print('Got em!')
                     self._running = False
                 self._value -= 1
             else:
@@ -429,8 +433,8 @@ class Toggles(PhaseThread):
                 if (self._value == self._target) and button_color != "B": #correct combination + check if button target is correct
                     self._defused = True
                 # the combination is incorrect -> phase failed (strike)
-                elif (self._value != self._target[0:len(self._value)]):
-                    self._failed = True
+                #elif (self._value != self._target[0:len(self._value)]):
+                #    self._failed = True
         sleep(0.1)
 
     # returns the toggle switches state as a string
@@ -440,4 +444,3 @@ class Toggles(PhaseThread):
         else:
             # TODO
             pass
-
