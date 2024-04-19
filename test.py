@@ -126,4 +126,5 @@ class Main(ttk.Frame):
 root = Tk()
 main = Main(root)
 root.title("TESTING")
+main.__init__._erase_c_entry()
 root.mainloop()
