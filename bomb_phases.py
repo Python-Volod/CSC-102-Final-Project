@@ -16,6 +16,47 @@ from time import sleep
 import os
 import sys
 
+
+#########
+# functions
+#########
+
+
+def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
+    ciphertext = int(c_entry.get())
+    p = int(p_entry.get())
+    q = int(q_entry.get())
+    e = int(e_entry.get())
+    
+    try:
+        n = p * q
+        # Calculate phi(n)
+        phi = (p - 1) * (q - 1)
+
+        # Calculate the modular multiplicative inverse of e modulo phi(n) to find d
+        d = sympy.mod_inverse(e, phi)
+    except: 
+        main_label.configure(text='Error occurred. Try again.')
+        return 
+    # Decrypt the ciphertext
+    try:
+        plaintext = pow(ciphertext, d, n)
+    except: 
+        main_label.configure(text='Error occurred. Try again.')
+        return 
+    plaintext_string = ""
+    while plaintext:
+        plaintext_string += chr(plaintext & 0xFF)
+        plaintext >>= 8
+    plaintext_string = plaintext_string[::-1]
+    if (plaintext_string not in words) and ([p , q] == global_keys[2]) and (ciphertext == encoded_keyword):
+        main_label.configure(text="The key is {}".format(keyword))
+        return
+    main_label.configure(text="The key is {}".format(plaintext_string))
+
+
+
+
 #########
 # classes
 #########
@@ -82,50 +123,23 @@ class Lcd(Frame):
         # Setup the RSA tab 
         # Main function for the RSA that decrypts using user entered values 
         # created created with help of Chat GPT
-        def decrypt_rsa():
-            ciphertext = int(self.c_entry.get())
-            p = int(self.p_entry.get())
-            q = int(self.q_entry.get())
-            e = int(self.e_entry.get())
-            def egcd(a, b):
-                if a == 0:
-                    return (b, 0, 1)
-                else:
-                    g, y, x = egcd(b % a, a)
-                    return (g, x - (b // a) * y, y)
-            def modinv(a, m):
-                g, x, y = egcd(a, m)
-                if g != 1:
-                    self.main_label.configure(text = 'Error occured try again')
-                    return 0
-                else:
-                    return x % m
-            n = p * q
-            phi = (p - 1) * (q - 1)
-            d = modinv(e, phi)
-            try:
-                plaintext = pow(ciphertext, d, n)
-                print(plaintext)
-            except:
-                self.main_label.configure(text = 'Error occured try again')
-            self.main_label.configure(text = "The key is {}".format(chr(plaintext)))
         # Feedback for the user
         self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="#00ff00", anchor=CENTER, font=("Courier New", 18), bg="black")
         self.main_label.place(relx=0.5, rely=0.1, anchor=CENTER)
         # Fields for user to enter values and button to decode using the given information
-        text_c= StringVar()
-        text_c.set('Enter the C-value')
-        text_e= StringVar()
-        text_e.set('Enter the E-value')
-        text_p= StringVar()
-        text_p.set('Enter the P-value')
-        text_q = StringVar()
-        text_q.set('Enter the Q-value')
-        self.c_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=text_c, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
-        self.e_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=text_e, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
-        self.p_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=text_p, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
-        self.q_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=text_q, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
-        self.decode_button = tkinter.Button(self.rsa_tab, text = "Decode", command=decrypt_rsa, font=("Courier New", 18), bg="")
+        self.text_c= StringVar()
+        self.text_c.set('Enter the C-value')
+        self.text_e= StringVar()
+        self.text_e.set('Enter the E-value')
+        self.text_p= StringVar()
+        self.text_p.set('Enter the P-value')
+        self.text_q = StringVar()
+        self.text_q.set('Enter the Q-value')
+        self.c_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=self.text_c, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
+        self.e_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=self.text_e, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
+        self.p_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=self.text_p, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
+        self.q_entry = Entry(self.rsa_tab,fg="#00ff00",textvariable=self.text_q, font=("Courier New", 18), bg= "dim gray", relief=SUNKEN)
+        self.decode_button = tkinter.Button(self.rsa_tab, text = "Decode", command=lambda: decrypt_rsa(self.c_entry, self.p_entry, self.q_entry, self.e_entry, self.main_label), font=("Courier New", 18), bg="firebrick4")
         self.c_entry.place(relx=0.5, rely=0.25, anchor=CENTER)
         self.e_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
         self.p_entry.place(relx=0.5, rely=0.55, anchor=CENTER)
@@ -134,29 +148,29 @@ class Lcd(Frame):
         # Create events so that the empty entry fields would show what values they excpect 
         def _erase_c_entry(event):
             if self.c_entry.get() == "Enter the C-value":
-                text_c.set("")
+                self.text_c.set("")
         def _erase_e_entry(event):
             if self.e_entry.get() == "Enter the E-value":
-                text_e.set("")
+                self.text_e.set("")
         def _erase_p_entry(event):
             if self.p_entry.get() == "Enter the P-value":
-                text_p.set("")
+                self.text_p.set("")
         def _erase_q_entry(event):
             if self.q_entry.get() == "Enter the Q-value":
-                text_q.set("")
+                self.text_q.set("")
 
         def _redraw_c_entry(event):
             if self.c_entry.get() == "":
-                text_c.set('Enter the C-value')
+                self.text_c.set('Enter the C-value')
         def _redraw_e_entry(event):
             if self.e_entry.get() == "":
-                text_e.set('Enter the E-value')
+                self.text_e.set('Enter the E-value')
         def _redraw_p_entry(event):
             if self.p_entry.get() == "":
-                text_p.set('Enter the P-value')
+                self.text_p.set('Enter the P-value')
         def _redraw_q_entry(event):
             if self.q_entry.get() == "":
-                text_q.set('Enter the Q-value')
+                self.text_q.set('Enter the Q-value')
 
         self.c_entry.bind("<ButtonRelease-1>", _erase_c_entry)
         self.e_entry.bind("<ButtonRelease-1>", _erase_e_entry)
@@ -253,10 +267,7 @@ class PhaseThread(Thread):
 # the timer phase
 class Timer(PhaseThread):
     def __init__(self, component, initial_value, name="Timer"):
-        print("CALL WAS HEARD")
-        print(initial_value)
         super().__init__(name, component)
-        print(initial_value)
         # the default value is the specified initial value
         self._value = initial_value
         # is the timer paused?
@@ -278,7 +289,6 @@ class Timer(PhaseThread):
                 sleep(self._interval)
                 # the timer has expired -> phase failed (explode)
                 if (self._value == 0):
-                    print('Got em!')
                     self._running = False
                 self._value -= 1
             else:
@@ -302,10 +312,32 @@ class Timer(PhaseThread):
 
 # the keypad phase
 class Keypad(PhaseThread):
-    def __init__(self, component, target, name="Keypad"):
+    
+    def __init__(self, component, target, gui, name="Keypad"):
         super().__init__(name, component, target)
+        self._location = "main"
         # the default value is an empty string
         self._value = ""
+        self.counter = 1
+        self.gui= gui
+    
+    def switch_location(self):
+        if self.counter == 1:
+            self.gui.tabs.select(self.gui.rsa_tab)
+            self.gui.update()
+            self._location = "rsa_tab_c" 
+        if self.counter == 2:
+            self._location = "rsa_tab_e"     
+        if self.counter == 3:
+            self._location = "rsa_tab_p"
+        if self.counter == 4:
+            self._location = "rsa_tab_q"           
+        if self.counter == 5:
+            self.gui.tabs.select(self.gui.main_tab)
+            self._location = "main"
+            self.gui.update()
+            self.counter = 0
+        self.counter += 1
 
     # runs the thread
     def run(self):
@@ -323,12 +355,68 @@ class Keypad(PhaseThread):
                     sleep(0.1)
                 # log the key
                 self._value += str(key)
-                # the combination is correct -> phase defused
-                if (self._value == self._target):
-                    self._defused = True
-                # the combination is incorrect -> phase failed (strike)
-                elif (self._value != self._target[0:len(self._value)]):
-                    self._failed = True
+                if self._value == "*":
+                    self.switch_location()
+                    self._value = ""
+                elif self._location == "main":
+                    # the combination is correct -> phase defused
+                    if (self._value == self._target):
+                        self._defused = True
+                    # the combination is incorrect -> phase failed (strike)
+                    elif (self._value != self._target[0:len(self._value)]):
+                        self._failed = True
+                elif self._location == "rsa_tab_c":
+                    if self.gui.c_entry.get() == "Enter the C-value":
+                        self.gui.text_c.set("")
+                    elif self._value == "#":
+                        prev = self.gui.c_entry.get()
+                        prev = prev[:len(prev)-1]
+                        self.gui.text_c.set(prev)
+                        self._value = ""
+                        if prev == "":
+                            self.gui.text_c.set('Enter the C-value')
+                    prev = self.gui.c_entry.get()
+                    self.gui.text_c.set(prev + self._value)
+                    self._value = ""
+                elif self._location == "rsa_tab_e":
+                    if self.gui.e_entry.get() == "Enter the E-value":
+                        self.gui.text_e.set("")
+                    elif self._value == "#":
+                        prev = self.gui.e_entry.get()
+                        prev = prev[:len(prev)-1]
+                        self.gui.text_e.set(prev)
+                        self._value = ""
+                        if prev == "":
+                            self.gui.text_e.set('Enter the E-value')
+                    prev = self.gui.e_entry.get()
+                    self.gui.text_e.set(prev + self._value)
+                    self._value = ""
+                elif self._location == "rsa_tab_p":
+                    if self.gui.p_entry.get() == "Enter the P-value":
+                        self.gui.text_p.set("")
+                    elif self._value == "#":
+                        prev = self.gui.p_entry.get()
+                        prev = prev[:len(prev)-1]
+                        self.gui.text_p.set(prev)
+                        self._value = ""
+                        if prev == "":
+                            self.gui.text_p.set('Enter the P-value')
+                    prev = self.gui.p_entry.get()
+                    self.gui.text_p.set(prev + self._value)
+                    self._value = ""
+                elif self._location == "rsa_tab_q":
+                    if self.gui.q_entry.get() == "Enter the Q-value":
+                        self.gui.text_q.set("")
+                    elif self._value == "#":
+                        prev = self.gui.q_entry.get()
+                        prev = prev[:len(prev)-1]
+                        self.gui.text_q.set(prev)
+                        self._value = ""
+                        if prev == "":
+                            self.gui.text_q.set('Enter the Q-value')
+                    prev = self.gui.q_entry.get()
+                    self.gui.text_q.set(prev + self._value)
+                    self._value = ""            
             sleep(0.1)
 
     # returns the keypad combination as a string
