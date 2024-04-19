@@ -216,6 +216,7 @@ class Lcd(Frame):
         self._lbutton.destroy()
         self._ltoggles.destroy()
         self._lstrikes.destroy()
+        self.rsa_tab.destroy()
         if (SHOW_BUTTONS):
             self._bpause.destroy()
             self._bquit.destroy()
@@ -318,6 +319,7 @@ class Keypad(PhaseThread):
         self._location = "main"
         # the default value is an empty string
         self._value = ""
+        self._entered_value = ""
         self.counter = 1
         self.gui= gui
     
@@ -360,10 +362,12 @@ class Keypad(PhaseThread):
                     self._value = ""
                 elif self._location == "main":
                     # the combination is correct -> phase defused
-                    if (self._value == self._target):
-                        self._defused = True
+                    if self._value == self._target[0 + len(self._entered_value)]:
+                        self._entered_value += self._value
+                        if self._entered_value == self._target:
+                            self._defused = True
                     # the combination is incorrect -> phase failed (strike)
-                    elif (self._value != self._target[0:len(self._value)]):
+                    else:
                         self._failed = True
                 elif self._location == "rsa_tab_c":
                     if self.gui.c_entry.get() == "Enter the C-value":
@@ -424,7 +428,7 @@ class Keypad(PhaseThread):
         if (self._defused):
             return "DEFUSED"
         else:
-            return self._value
+            return self._entered_value
 
 # the jumper wires phase
 class Wires(PhaseThread):
