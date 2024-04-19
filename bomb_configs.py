@@ -15,6 +15,9 @@ NUM_PHASES = 4       # the total number of initial active bomb phases
 
 # imports
 from random import randint, shuffle, choice
+from Cryptodome.Util.number import bytes_to_long
+import random
+import sympy
 import pygame
 from string import ascii_uppercase
 import pygame
@@ -122,59 +125,43 @@ def genSerial():
 
     return serial, toggle_value, jumper_value
 
-# generates the keypad combination from a keyword and rotation key
-def genKeypadCombination():
-    # encrypts a keyword using a rotation cipher
-    def encrypt(keyword, rot):
-        cipher = ""
+# generates the keypad combination by encoding a random keyword using rsa
+def genKeypadCombination():    
+    #Generates a prime number with specified bits
+    def generate_prime(bits=16):
+        while True:
+            p = sympy.randprime(2**(bits-1), 2**bits)
+            if sympy.isprime(p):
+                return p
+    #Generates RSA keys
+    def generate_rsa_keys():
+        global p,q
+        p = generate_prime()
+        q = generate_prime()
+        if q > p:
+            p ,q = q, p
+        n = p * q
+        phi_n = (p - 1) * (q - 1)
+        e = random.randint(2, phi_n - 1)
+        while sympy.gcd(e, phi_n) != 1:
+            e = random.randint(2, phi_n - 1)
+        d = sympy.mod_inverse(e, phi_n)
+        return (n, e), d, [p, q]
+    #Encrypts message using RSA
+    def rsa_encrypt(message, public_key):
+        n, e = public_key
+        encoded_text = pow(bytes_to_long(message.encode()), e, n)
+        return encoded_text, n, e
+    # the list of keywords 
+    global words 
+    words = ["sex", "hate", "pain", "love", "kiwi"]
+    #Encode a random word from a list using RSA
+    word = random.choice(words)
+    global global_keys
+    global_keys = generate_rsa_keys()
+    encoded_text, n, e = rsa_encrypt(word, global_keys[0])
+    return word, encoded_text, n, e
 
-        # encrypt each letter of the keyword using rot
-        for c in keyword:
-            cipher += chr((ord(c) - 65 + rot) % 26 + 65)
-
-        return cipher
-
-    # returns the keypad digits that correspond to the passphrase
-    def digits(passphrase):
-        combination = ""
-        keys = [ None, None, "ABC", "DEF", "GHI", "JKL", "MNO", "PRS", "TUV", "WXY" ]
-
-        # process each character of the keyword
-        for c in passphrase:
-            for i, k in enumerate(keys):
-                if (k and c in k):
-                    # map each character to its digit equivalent
-                    combination += str(i)
-
-        return combination
-
-    # the list of keywords and matching passphrases
-    keywords = { "BANDIT": "RIVER",\
-                 "BUCKLE": "FADED",\
-                 "CANOPY": "FOXES",\
-                 "DEBATE": "THROW",\
-                 "FIERCE": "TRICK",\
-                 "GIFTED": "CYCLE",\
-                 "IMPACT": "STOLE",\
-                 "LONELY": "TOADY",\
-                 "MIGHTY": "ALOOF",\
-                 "NATURE": "CARVE",\
-                 "REBORN": "CLIMB",\
-                 "RECALL": "FEIGN",\
-                 "SYSTEM": "LEAVE",\
-                 "TAKING": "SPINY",\
-                 "WIDELY": "BOUND",\
-                 "ZAGGED": "YACHT" }
-    # the rotation cipher key
-    rot = randint(1, 25)
-
-    # pick a keyword and matching passphrase
-    keyword, passphrase = choice(list(keywords.items()))
-    # encrypt the passphrase and get its combination
-    cipher_keyword = encrypt(keyword, rot)
-    combination = digits(passphrase)
-
-    return keyword, cipher_keyword, rot, combination, passphrase
 
 def run_sound(sound_name, speed_mult = 1):
     pygame.mixer.music.load("sounds/" + sound_name)
@@ -197,7 +184,7 @@ serial, toggles_target, wires_target = genSerial()
 #  rot: the key to decrypt the keyword
 #  keypad_target: the keypad phase defuse value (combination)
 #  passphrase: the target plaintext passphrase
-keyword, cipher_keyword, rot, keypad_target, passphrase = genKeypadCombination()
+keyword, encoded_keyword, n, e = genKeypadCombination() # CHANGE THE COMMENTS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # generate the color of the pushbutton (which determines how to defuse the phase)
 button_color = choice(["R", "G", "B"])
@@ -214,7 +201,7 @@ if (DEBUG):
     print(f"Serial number: {serial}")
     print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}")
     print(f"Wires target: {bin(wires_target)[2:].zfill(5)}/{wires_target}")
-    print(f"Keypad target: {keypad_target}/{passphrase}/{keyword}/{cipher_keyword}(rot={rot})")
+    print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with n : {n} and e : {e}")
     print(f"Button target: {button_target}")
 
 # set the bomb's LCD bootup text
@@ -225,11 +212,7 @@ boot_text = f"Booting...\n\x00\x00"\
             f"*System model: 102BOMBv4.2\n"\
             f"*Serial number: {serial}\n"\
             f"Encrypting keypad...\n\x00"\
-            f"*Keyword: {cipher_keyword}; key: {rot}\n"\
+            f"*Keyword: {encoded_keyword}; key: {n} , {e}\n"\
             f"*{' '.join(ascii_uppercase)}\n"\
             f"*{' '.join([str(n % 10) for n in range(26)])}\n"\
             f"Rendering phases...\x00"
-
-
-
-
