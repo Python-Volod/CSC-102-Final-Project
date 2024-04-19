@@ -322,6 +322,10 @@ class Keypad(PhaseThread):
         self._entered_value = ""
         self.counter = 1
         self.gui= gui
+        self.keypad_letters_to_num = {'a': '2', 'b': '22', 'c': '222', 'd': '3', 'e': '33', 'f': '333', 'g': '4', 'h': '44', 'i': '444', 'j': '5', 'k': '55', 'l': '555', 'm': '6', 'n': '66', 'o': '666', 'p': '7', 'r': '77', 's': '777', 't': '8', 'u': '88', 'v': '888', 'w': '9', 'x': '99', 'y': '999'}
+        self._target_num = ""
+        for l in self._target:
+            self._target_num += self.keypad_letters_to_num[l]
     
     def switch_location(self):
         if self.counter == 1:
@@ -362,13 +366,16 @@ class Keypad(PhaseThread):
                     self._value = ""
                 elif self._location == "main":
                     # the combination is correct -> phase defused
-                    if self._value == self._target[0 + len(self._entered_value)]:
+                    if self._value == self._target_num[0 + len(self._entered_value)]:
                         self._entered_value += self._value
-                        if self._entered_value == self._target:
+                        if self._entered_value == self._target_num:
                             self._defused = True
+                        self._value = ""
+                        pass
                     # the combination is incorrect -> phase failed (strike)
                     else:
                         self._failed = True
+                        self._entered_value = ""
                 elif self._location == "rsa_tab_c":
                     if self.gui.c_entry.get() == "Enter the C-value":
                         self.gui.text_c.set("")
