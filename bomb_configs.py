@@ -7,9 +7,9 @@
 # constants
 DEBUG = False        # debug mode?
 RPi = True           # is this running on the RPi?
-ANIMATE = True       # animate the LCD text?
+ANIMATE = False       # animate the LCD text?
 SHOW_BUTTONS = False # show the Pause and Quit buttons on the main LCD GUI?
-COUNTDOWN = 300      # the initial bomb countdown value (seconds)
+COUNTDOWN = 480      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"
 NUM_PHASES = 4       # the total number of initial active bomb phases
 
@@ -160,14 +160,10 @@ def genKeypadCombination():
     global global_keys
     global_keys = generate_rsa_keys()
     encoded_text, n, e = rsa_encrypt(word, global_keys[0])
-    return word, encoded_text, n, e
+    return word, encoded_text, p, q, e
 
 
-def run_sound(sound_name, speed_mult = 1):
-    pygame.mixer.music.load("sounds/" + sound_name)
-    pygame.mixer.init.frequency = 44.1 * 2.5 * speed_mult
-    pygame.set_volume(100)
-    pygame.mixer.music.play(8)
+
 
 ###############################
 # generate the bomb's specifics
@@ -184,7 +180,7 @@ serial, toggles_target, wires_target = genSerial()
 #  rot: the key to decrypt the keyword
 #  keypad_target: the keypad phase defuse value (combination)
 #  passphrase: the target plaintext passphrase
-keyword, encoded_keyword, n, e = genKeypadCombination() # CHANGE THE COMMENTS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+keyword, encoded_keyword, p, q, e = genKeypadCombination() # CHANGE THE COMMENTS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # generate the color of the pushbutton (which determines how to defuse the phase)
 button_color = choice(["R", "G", "B"])
@@ -201,7 +197,7 @@ if (DEBUG):
     print(f"Serial number: {serial}")
     print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}")
     print(f"Wires target: {bin(wires_target)[2:].zfill(5)}/{wires_target}")
-    print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with n : {n} and e : {e}")
+    print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with p:q - {p}:{q} and e : {e}")
     print(f"Button target: {button_target}")
 
 # set the bomb's LCD bootup text
@@ -212,7 +208,5 @@ boot_text = f"Booting...\n\x00\x00"\
             f"*System model: 102BOMBv4.2\n"\
             f"*Serial number: {serial}\n"\
             f"Encrypting keypad...\n\x00"\
-            f"*Keyword: {encoded_keyword}!{n},10,{str(hex(int(e)))},16;\n"\
-            f"*{' '.join(ascii_uppercase)}\n"\
-            f"*{' '.join([str(n % 10) for n in range(26)])}\n"\
+            f"*Defuse Keyword: {encoded_keyword}/ENC/10/{str(hex(int(e)))}/ENC/16/;\n*Keys:{str(bin(p))};{str(bin(q))}/ENC/2/;\n"\
             f"Rendering phases...\x00"
