@@ -4,12 +4,14 @@
 # Team: 
 #################################
 import tkinter.ttk
-import pygame
+from pydub import AudioSegment
+from pydub.playback import play
 
 # import the configs
 from bomb_configs import *
 # other imports
 from tkinter import *
+from PIL import ImageTk, Image
 import tkinter
 from threading import Thread
 from time import sleep
@@ -49,9 +51,13 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
         plaintext_string += chr(plaintext & 0xFF)
         plaintext >>= 8
     plaintext_string = plaintext_string[::-1]
-    if (plaintext_string not in words) and ([p , q] == global_keys[2]) and (ciphertext == encoded_keyword):
-        main_label.configure(text="The key is {}".format(keyword))
-        return
+    if (plaintext_string not in words):
+        if ([p , q] == global_keys[2]) and (ciphertext == encoded_keyword):
+            main_label.configure(text="The key is {}".format(keyword))
+            return
+        else:
+            main_label.configure(text="Incorect input, try again")
+            return
     main_label.configure(text="The key is {}".format(plaintext_string))
 
 
@@ -126,6 +132,14 @@ class Lcd(Frame):
         # Feedback for the user
         self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="#00ff00", anchor=CENTER, font=("Courier New", 18), bg="black")
         self.main_label.place(relx=0.5, rely=0.1, anchor=CENTER)
+        self.img1 = Image.open("visual/rad_dan.png")
+        self.img1 = self.img1.resize((150,150),Image.ANTIALIAS)
+        self.img1 = ImageTk.PhotoImage(self.img1)
+        self.left_image_label = Label(self.rsa_tab, image=self.img1, height=150, width=150, bg="black")
+        self.right_image_label = Label(self.rsa_tab, image=self.img1, height=150, width=150, bg="black")
+        self.left_image_label.place(relx=0.05, rely=0.5)
+        self.right_image_label.place(relx=0.75, rely=0.5)
+        #self.right_image_label.place(relx=0.75, rely=0.45)
         # Fields for user to enter values and button to decode using the given information
         self.text_c= StringVar()
         self.text_c.set('Enter the C-value')
@@ -311,6 +325,30 @@ class Timer(PhaseThread):
     def __str__(self):
         return f"{self._min}:{self._sec}"
 
+class M_Player(PhaseThread):
+    def __init__(self, song, name="M_Player", factor=1):
+        super().__init__(name)
+        self.current_song = song
+        self.factor = factor
+        self._running = True
+
+    def run(self, n=-1):
+        # Load the audio file
+        sound = AudioSegment.from_file("sounds/" + self.current_song)
+
+        # Adjust speed using the factor
+        sound_with_adjusted_speed = sound._spawn(sound.raw_data, overrides={
+            "frame_rate": int(sound.frame_rate * self.factor)
+        })
+        sound_with_adjusted_speed = sound_with_adjusted_speed[:50000]
+        # Play the audio
+        play(sound_with_adjusted_speed)
+        if self._running == True:
+            self.factor += 50/COUNTDOWN
+            print(1)
+            self.run()
+
+
 # the keypad phase
 class Keypad(PhaseThread):
     
@@ -337,8 +375,10 @@ class Keypad(PhaseThread):
         if self.counter == 3:
             self._location = "rsa_tab_p"
         if self.counter == 4:
-            self._location = "rsa_tab_q"           
+            self._location = "rsa_tab_q"  
         if self.counter == 5:
+            self._location = "rsa_tab_button"         
+        if self.counter == 6:
             self.gui.tabs.select(self.gui.main_tab)
             self._location = "main"
             self.gui.update()
@@ -427,7 +467,12 @@ class Keypad(PhaseThread):
                             self.gui.text_q.set('Enter the Q-value')
                     prev = self.gui.q_entry.get()
                     self.gui.text_q.set(prev + self._value)
-                    self._value = ""            
+                    self._value = ""      
+                elif self._location == "rsa_tab_button":
+                    if self._value == "#":
+                        decrypt_rsa(self.gui.c_entry, self.gui.p_entry, self.gui.q_entry, self.gui.e_entry, self.gui.main_label)
+                        self.gui.update()
+                    self._value = ""  
             sleep(0.1)
 
     # returns the keypad combination as a string
