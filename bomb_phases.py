@@ -7,6 +7,8 @@ import tkinter.ttk
 from pydub import AudioSegment
 from pydub.playback import play
 
+
+
 # import the configs
 from bomb_configs import *
 # other imports
@@ -341,12 +343,11 @@ class M_Player(PhaseThread):
             "frame_rate": int(sound.frame_rate * self.factor)
         })
         sound_with_adjusted_speed = sound_with_adjusted_speed[:50000]
-        # Play the audio
         play(sound_with_adjusted_speed)
         if self._running == True:
             self.factor += 50/COUNTDOWN
-            print(1)
             self.run()
+
 
 
 # the keypad phase
@@ -478,7 +479,7 @@ class Keypad(PhaseThread):
     # returns the keypad combination as a string
     def __str__(self):
         if (self._defused):
-            return "DEFUSED"
+            return "DEFUSED, key: " + wires_key
         else:
             return self._entered_value
 
@@ -486,19 +487,39 @@ class Keypad(PhaseThread):
 class Wires(PhaseThread):
     def __init__(self, component, target, name="Wires"):
         super().__init__(name, component, target)
-        print(self.name, self._component, self._target)
     # runs the thread
     def run(self):
-        # TODO
-        pass
+        self._running = True
+        while (self._running):
+            self._value = ""
+            # get the pushbutton's state
+            for wire in self._component:
+                if wire.value == True:
+                    self._value += "1"
+                else:
+                    self._value += "0"
+            if self._value == "11111":
+                sleep(0.1)
+            elif self._value == self._target:
+                self._defused = True
+            else:
+                print("Third case---------")
+                n = 0
+                for wire in self._value:
+                    print(wire)
+                    if wire == self._target[n]:
+                        None
+                    elif wire == "0":
+                        self._failed = True 
+                    n += 1      
+            sleep(0.1)
 
     # returns the jumper wires state as a string
     def __str__(self):
         if (self._defused):
             return "DEFUSED"
         else:
-            # TODO
-            pass
+            return self._value
 
 # the pushbutton phase
 class Button(PhaseThread):

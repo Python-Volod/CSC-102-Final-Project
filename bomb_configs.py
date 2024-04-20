@@ -154,7 +154,7 @@ def genKeypadCombination():
         return encoded_text, n, e
     # the list of keywords 
     global words 
-    words = ["sex", "hate", "pain", "love", "kiwi"]
+    words = ["sex", "hate", "pain", "love", "kiwi", "lamb", "frog", "tree", "ball", "book", "moon", "fish", "bird", "rose", "star", "death", "kyiv", "lviv", "symu"]
     #Encode a random word from a list using RSA
     word = random.choice(words)
     global global_keys
@@ -168,11 +168,7 @@ def genKeypadCombination():
 ###############################
 # generate the bomb's specifics
 ###############################
-# generate the bomb's serial number (which also gets us the toggle and jumper target values)
-#  serial: the bomb's serial number
-#  toggles_target: the toggles phase defuse value
-#  wires_target: the wires phase defuse value
-serial, toggles_target, wires_target = genSerial()
+
 
 # generate the combination for the keypad phase
 #  keyword: the plaintext keyword for the lookup table
@@ -181,6 +177,22 @@ serial, toggles_target, wires_target = genSerial()
 #  keypad_target: the keypad phase defuse value (combination)
 #  passphrase: the target plaintext passphrase
 keyword, encoded_keyword, p, q, e = genKeypadCombination() # CHANGE THE COMMENTS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# generate the bomb's serial number (which also gets us the toggle and jumper target values)
+#  serial: the bomb's serial number
+#  toggles_target: the toggles phase defuse value
+#  wires_target: the wires phase defuse value
+serial, toggles_target, wires_target = genSerial()
+
+selected_char = keyword[randint(0, len(keyword)-1)]
+combination = bin(ord(selected_char))[2:]  # Convert to binary and remove '0b' prefix
+combination = combination[-5:]  # Take the last 5 bits
+character_dict = {'00000': 'A', '00001': 'B', '00010': 'C', '00011': 'D', '00100': 'E', '00101': 'F', '00110': 'G', '00111': 'H', '01000': 'I', '01001': 'J', '01010': 'K', '01011': 'L', '01100': 'M', '01101': 'N', '01110': 'O', '01111': 'P', '10000': 'Q', '10001': 'R', '10010': 'S', '10011': 'T', '10100': 'U', '10101': 'V', '10110': 'W', '10111': 'X', '11000': 'Y', '11001': 'Z', '11010': '0', '11011': '1', '11100': '2', '11101': '3', '11110': '4', '11111': '5'}
+
+wires_key = character_dict[combination]
+wires_target = combination
+
+
 
 # generate the color of the pushbutton (which determines how to defuse the phase)
 button_color = choice(["R", "G", "B"])
