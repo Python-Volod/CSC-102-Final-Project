@@ -52,6 +52,9 @@ def setup_phases():
     gui.setButton(button)
     # setup the toggle switches thread
     toggles = Toggles(component_toggles, toggles_target)
+    # setup sound
+    m_player = M_Player("radiation_sound.mp3", factor=(150)/COUNTDOWN)
+
 
     # start the phase threads
     timer.start()
@@ -59,6 +62,7 @@ def setup_phases():
     wires.start()
     button.start()
     toggles.start()
+    m_player.start()
 
 # checks the phase threads
 def check_phases():
