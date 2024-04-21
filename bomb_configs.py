@@ -5,10 +5,10 @@
 #################################
 
 # constants
-DEBUG = False        # debug mode?
-RPi = True           # is this running on the RPi?
-ANIMATE = False       # animate the LCD text?
-SHOW_BUTTONS = False # show the Pause and Quit buttons on the main LCD GUI?
+DEBUG = True        # debug mode?
+RPi = False           # is this running on the RPi?
+ANIMATE = True       # animate the LCD text?
+SHOW_BUTTONS = True # show the Pause and Quit buttons on the main LCD GUI?
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"
 NUM_PHASES = 4       # the total number of initial active bomb phases
@@ -89,6 +89,12 @@ if (RPi):
         pin.direction = Direction.INPUT
         pin.pull = Pull.DOWN
 
+    component_toggles2 = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
+    for pin in component_toggles2:
+        # pins are input and pulled down
+        pin.direction = Direction.INPUT
+        pin.pull = Pull.DOWN
+
 ###########
 # functions
 ###########
@@ -101,6 +107,7 @@ def genSerial():
     # set the digits (used in the toggle switches phase)
     serial_digits = []
     toggle_value = randint(1, 15)
+    toggles2_value = []
     # the sum of the digits is the toggle value
     while (len(serial_digits) < 3 or toggle_value - sum(serial_digits) > 0):
         d = randint(0, min(9, toggle_value - sum(serial_digits)))
@@ -119,11 +126,13 @@ def genSerial():
     # and shuffle it
     shuffle(serial)
     # finally, add a final letter (F..Z)
-    serial += [ choice([ chr(n) for n in range(70, 91) ]) ]
+    toggles2_value.append([choice([chr(n) for n in range(70, 91)])])
+    serial += toggles2_value
     # and make the serial number a string
     serial = "".join(serial)
 
     return serial, toggle_value, jumper_value
+    #return serial, toggle_value, jumper_value, toggle2_value
 
 # generates the keypad combination by encoding a random keyword using rsa
 def genKeypadCombination():    
@@ -181,8 +190,10 @@ keyword, encoded_keyword, p, q, e = genKeypadCombination() # CHANGE THE COMMENTS
 # generate the bomb's serial number (which also gets us the toggle and jumper target values)
 #  serial: the bomb's serial number
 #  toggles_target: the toggles phase defuse value
+#  toggle2_target: the second toggles phase defuse value
 #  wires_target: the wires phase defuse value
 serial, toggles_target, wires_target = genSerial()
+#serial, toggles_target, wires_target, toggles2_target = genSerial()
 
 selected_char = keyword[randint(0, len(keyword)-1)]
 combination = bin(ord(selected_char))[2:]  # Convert to binary and remove '0b' prefix
@@ -192,7 +203,8 @@ character_dict = {'00000': 'A', '00001': 'B', '00010': 'C', '00011': 'D', '00100
 wires_key = character_dict[combination]
 wires_target = combination
 
-
+#toggles_target = bin(toggle_value)[2:].zfill(4) # target for part 1 of toggles
+#toggles2_target = bin(sum(ord(c) - 65 for c in toggle2_value))[2:].zfill(4) # target for part 2 of toggles
 
 # generate the color of the pushbutton (which determines how to defuse the phase)
 button_color = choice(["R", "G", "B"])
@@ -205,9 +217,10 @@ if (button_color == "G"):
 elif (button_color == "B"):
     button_target = [ n for n in serial if n.isdigit() ][-1]
 
-if (DEBUG):
+if (DEBUG): # check if in debug mode
     print(f"Serial number: {serial}")
     print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}")
+    #print(f"Toggles2 target: {bin(toggles2_target)[2:].zfill(4)}/{toggles2_target}")
     print(f"Wires target: {bin(wires_target)[2:].zfill(5)}/{wires_target}")
     print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with p:q - {p}:{q} and e : {e}")
     print(f"Button target: {button_target}")
