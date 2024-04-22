@@ -106,32 +106,24 @@ def genSerial():
     # set the digits (used in the toggle switches phase)
     serial_digits = []
     toggle_value = randint(1, 15)
-    toggles2_value = []
     # the sum of the digits is the toggle value
     while (len(serial_digits) < 3 or toggle_value - sum(serial_digits) > 0):
         d = randint(0, min(9, toggle_value - sum(serial_digits)))
         serial_digits.append(d)
-
     # set the letters (used in the jumper wires phase)
     jumper_indexes = [ 0 ] * 5
     while (sum(jumper_indexes) < 3):
         jumper_indexes[randint(0, len(jumper_indexes) - 1)] = 1
     jumper_value = int("".join([ str(n) for n in jumper_indexes ]), 2)
-    # the letters indicate which jumper wires must be "cut"
     jumper_letters = [ chr(i + 65) for i, n in enumerate(jumper_indexes) if n == 1 ]
-
     # form the serial number
-    serial = [ str(d) for d in serial_digits ] + jumper_letters
-    # and shuffle it
-    shuffle(serial)
-    # finally, add a final letter (F..Z)
-    toggles2_value.append([choice([chr(n) for n in range(70, 91)])])
-    serial += toggles2_value
-    # and make the serial number a string
-    serial = "".join(serial)
 
+    serial = [ str(d) for d in serial_digits ] + jumper_letters
+    shuffle(serial) # shuffle values
+    # and make the serial number a string
+
+    serial =  "".join(serial)
     return serial, toggle_value, jumper_value
-    #return serial, toggle_value, jumper_value, toggle2_value
 
 # generates the keypad combination by encoding a random keyword using rsa
 def genKeypadCombination():    
