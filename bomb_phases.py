@@ -593,7 +593,7 @@ class Button(PhaseThread):
 
     # runs the thread
     def run(self):
-        # self._running = True
+        self._running = True
         # while self._running:
         #     self.update_color(self._color)
             #self._value = self._component.value
