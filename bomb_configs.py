@@ -5,13 +5,13 @@
 #################################
 
 # constants
-DEBUG = False        # debug mode?
-RPi = True           # is this running on the RPi?
+DEBUG = True        # debug mode?
+RPi = False           # is this running on the RPi?
 ANIMATE = False       # animate the LCD text?
 SHOW_BUTTONS = True # show the Pause and Quit buttons on the main LCD GUI?
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"
-NUM_PHASES = 4       # the total number of initial active bomb phases
+NUM_PHASES = 5       # the total number of initial active bomb phases
 
 # imports
 from random import randint, shuffle, choice
@@ -105,7 +105,7 @@ if (RPi):
 def genSerial():
     # set the digits (used in the toggle switches phase)
     serial_digits = []
-    toggle_value = randint(1, 15)
+    toggle_value = randint(1, 15) # random toggle value between 1 and 15
     # the sum of the digits is the toggle value
     while (len(serial_digits) < 3 or toggle_value - sum(serial_digits) > 0):
         d = randint(0, min(9, toggle_value - sum(serial_digits)))
@@ -114,16 +114,18 @@ def genSerial():
     jumper_indexes = [ 0 ] * 5
     while (sum(jumper_indexes) < 3):
         jumper_indexes[randint(0, len(jumper_indexes) - 1)] = 1
-    jumper_value = int("".join([ str(n) for n in jumper_indexes ]), 2)
-    jumper_letters = [ chr(i + 65) for i, n in enumerate(jumper_indexes) if n == 1 ]
+    jumper_value = int("".join([ str(n) for n in jumper_indexes ]), 2) # print integer
+    jumper_letters = [ chr(i + 65) for i, n in enumerate(jumper_indexes) if n == 1 ] # put letters in list
+
+    # convert jumper_letters elements into their ASCII value, subtract by 64 (so A=1, B=2, etc.) and get the sum
+    toggle2_value = sum(ord(n) - 64 for n in jumper_letters)
+
     # form the serial number
+    serial = [ str(d) for d in serial_digits ] + jumper_letters # combine digits and letters
+    shuffle(serial) # shuffle values in random order
 
-    serial = [ str(d) for d in serial_digits ] + jumper_letters
-    shuffle(serial) # shuffle values
-    # and make the serial number a string
-
-    serial = "".join(serial)
-    return serial, toggle_value, jumper_value
+    serial = "".join(serial) # make string
+    return serial, toggle_value, jumper_value, toggle2_value # return the values
 
 # generates the keypad combination by encoding a random keyword using rsa
 def genKeypadCombination():    
@@ -176,23 +178,22 @@ def genKeypadCombination():
 #  rot: the key to decrypt the keyword
 #  keypad_target: the keypad phase defuse value (combination)
 #  passphrase: the target plaintext passphrase
-keyword, encoded_keyword, p, q, e = genKeypadCombination() # CHANGE THE COMMENTS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+keyword, encoded_keyword, p, q, e = genKeypadCombination()
 
 # generate the bomb's serial number (which also gets us the toggle and jumper target values)
 #  serial: the bomb's serial number
 #  toggles_target: the toggles phase defuse value
 #  toggle2_target: the second toggles phase defuse value
 #  wires_target: the wires phase defuse value
-serial, toggles_target, wires_target = genSerial()
+serial, toggles_target, wires_target, toggles2_target = genSerial()
 
 selected_char = keyword[randint(0, len(keyword)-1)]
 combination = bin(ord(selected_char))[2:]  # Convert to binary and remove '0b' prefix
 combination = combination[-5:]  # Take the last 5 bits
 character_dict = {'00000': 'A', '00001': 'B', '00010': 'C', '00011': 'D', '00100': 'E', '00101': 'F', '00110': 'G', '00111': 'H', '01000': 'I', '01001': 'J', '01010': 'K', '01011': 'L', '01100': 'M', '01101': 'N', '01110': 'O', '01111': 'P', '10000': 'Q', '10001': 'R', '10010': 'S', '10011': 'T', '10100': 'U', '10101': 'V', '10110': 'W', '10111': 'X', '11000': 'Y', '11001': 'Z', '11010': '0', '11011': '1', '11100': '2', '11101': '3', '11110': '4', '11111': '5'}
 wires_key = character_dict[combination]
-wires_target = str(combination)
 
-#toggles2_target = bin(sum(ord(c) - 65 for c in toggle2_value))[2:].zfill(4) # target for part 2 of toggles
+wires_target = str(combination) # convert combination to a string and set as target for wires
 
 # generate the color of the pushbutton (which determines how to defuse the phase)
 button_color = choice(["R", "G", "B"])
@@ -207,14 +208,13 @@ elif (button_color == "B"):
 
 if (DEBUG): # check if in debug mode
     print(f"Serial number: {serial}")
-    print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}")
-    #print(f"Toggles2 target: {bin(toggles2_target)[2:].zfill(4)}/{toggles2_target}")
+    print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}") # print binary representation of toggles_target, without it beginning with "0b"
+    print(f"Toggles2 target: {bin(toggles2_target)[2:].zfill(4)}/{toggles2_target}") # .zfill(4) to ensure 4 digits /{target as a decimal}
     print(f"Wires target: {bin(int(wires_target))[2:].zfill(5)}/{wires_target}")
     print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with p:q - {p}:{q} and e : {e}")
     print(f"Button target: {button_target}")
 
 # set the bomb's LCD bootup text
-#need to change to make this go from white to green (#00ff00)
 boot_text = f"Booting...\n\x00\x00"\
             f"*Kernel v3.1.4-159 loaded.\n"\
             f"Initializing subsystems...\n\x00"\

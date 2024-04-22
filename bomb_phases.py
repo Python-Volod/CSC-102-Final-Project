@@ -120,15 +120,15 @@ class Lcd(Frame):
                                text="Toggles phase: ")
         self._ltoggles.grid(row=6, column=0, columnspan=2, sticky=W)
 
-        '''
         self._ltoggles2 = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
-                               text="Toggles phase: ")
-        self._ltoggles2.grid(row=5, column=0, columnspan=2, sticky=W)
-        '''
+                               text="Toggles phase 2: ")
+        self._ltoggles2.grid(row=7, column=0, columnspan=2, sticky=W) # toggle part 2 status
+
 
         # the strikes left
         self._lstrikes = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Strikes left: ")
         self._lstrikes.grid(row=5, column=2, sticky=W)
+
         if (SHOW_BUTTONS):
             # the pause button (pauses the timer)
             self._bpause = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Pause",
@@ -255,7 +255,7 @@ class Lcd(Frame):
         self._lwires.destroy()
         self._lbutton.destroy()
         self._ltoggles.destroy()
-        #self._ltoggles2.destroy()
+        self._ltoggles2.destroy()
         self._lstrikes.destroy()
         self.rsa_tab.destroy()
         if (SHOW_BUTTONS):
@@ -454,7 +454,6 @@ class Keypad(PhaseThread):
                     # the combination is incorrect -> phase failed (strike)
                     else:
                         self._failed = True
-                        print("Its KEYPAD")
                         self._entered_value = ""
                 elif self._location == "rsa_tab_c":
                     if self.gui.c_entry.get() == "Enter the C-value":
@@ -553,7 +552,6 @@ class Wires(PhaseThread):
                         None
                     elif wire == "0":
                         self._failed = True
-                        print("Wires")
                     n += 1
             sleep(0.1)
 
@@ -653,18 +651,18 @@ class Toggles(PhaseThread):
         self._running = True
         self._value = ""
         while (self._running):
-            self._value = ""
-            for togle in self._component:
-                if togle.value == True:
+            self._value = "" # reset value
+            for toggle in self._component:
+                if toggle == True: # if toggle component is on, value adds 1
                     self._value += "1"
                 else: 
-                    self._value += "0"
+                    self._value += "0" # add a "0" if toggle component is off
+
             # the combination is correct -> phase defused
             if (
-                    self._value == self._target) and button_color != "B":  # correct combination + check if button target is correct
-                self._defused = True
-            # the combination is incorrect -> phase failed (strike)
-            elif self._value == '1111':
+                    self._value == self._target) and button_color != "B":  # correct combination, button color not blue
+                self._defused = True # defuse this phase
+            elif self._value == '0000': # ignore toggle values if all off
                 sleep(0.1) 
             else:
                 self._failed = True
@@ -672,14 +670,13 @@ class Toggles(PhaseThread):
 
     # returns the toggle switches state as a string
     def __str__(self):
-        if (self._defused):
+        if (self._defused): # display if toggle phase is defused or armed
             return "DEFUSED"
         else:
             return "ARMED"
             # TODO
 
-'''
-class Toggles2(PhaseThread):
+class Toggles2(PhaseThread): # second part of toggles
     def __init__(self, component, target, name="Toggles2"):
         super().__init__(name, component, target)
 
@@ -688,13 +685,23 @@ class Toggles2(PhaseThread):
         self._running = True
         self._value = ""
         while (self._running):
-            # the combination is correct -> phase defused
+            self._value = ""
+            for toggle in self._component:
+                if toggle == True:
+                    self._value += "1"
+                else:
+                    self._value += "0"
+            # correct combo, button not blue, toggles part 1 defused -> toggles part 2 defused
             if (
-                    self._value == self._target) and button_color != "B":  # correct combination + check if button target is correct
+                    self._value == self._target) and button_color != "B" and (self.toggles._defused):
                 self._defused = True
             # the combination is incorrect -> phase failed (strike)
-            else:
+            elif self._value == '0000':
+                sleep(0.1)
+            elif self.toggles._defused: # if combination is wrong
                 self._failed = True
+            else:
+                sleep(0.1)
         sleep(0.1)
 
     # returns the toggle switches state as a string
@@ -703,5 +710,3 @@ class Toggles2(PhaseThread):
             return "DEFUSED"
         else:
             return "ARMED"
-            # TODO
-'''
