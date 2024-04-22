@@ -651,11 +651,18 @@ class Toggles(PhaseThread):
         self._running = True
         self._value = ""
         while (self._running):
+            for togle in self._component:
+                if togle == True:
+                    self._value += "1"
+                else: 
+                    self._value += "0"
             # the combination is correct -> phase defused
             if (
                     self._value == self._target) and button_color != "B":  # correct combination + check if button target is correct
                 self._defused = True
             # the combination is incorrect -> phase failed (strike)
+            elif self._value == '1111':
+                sleep(0.1) 
             else:
                 self._failed = True
         sleep(0.1)
