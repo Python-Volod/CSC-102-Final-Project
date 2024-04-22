@@ -66,7 +66,6 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
 #########
 # the LCD display GUI
 class Lcd(Frame):
-    pygame.init()
 
     def __init__(self, window):
         super().__init__(window, bg="black")
@@ -116,7 +115,7 @@ class Lcd(Frame):
         self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
         # the toggle switches status
-        self._lx = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
+        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
                                text="Toggles phase: ")
         self._ltoggles.grid(row=6, column=0, columnspan=2, sticky=W)
 
@@ -664,6 +663,7 @@ class Toggles(PhaseThread):
             elif self._value == '1111':
                 sleep(0.1) 
             else:
+                print("TOGLES")
                 self._failed = True
         sleep(0.1)
 
