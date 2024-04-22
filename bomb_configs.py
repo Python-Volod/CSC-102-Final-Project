@@ -122,7 +122,7 @@ def genSerial():
     shuffle(serial) # shuffle values
     # and make the serial number a string
 
-    serial =  "".join(serial)
+    serial = "".join(serial)
     return serial, toggle_value, jumper_value
 
 # generates the keypad combination by encoding a random keyword using rsa
