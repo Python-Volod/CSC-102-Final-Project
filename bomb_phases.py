@@ -66,6 +66,7 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
 #########
 # the LCD display GUI
 class Lcd(Frame):
+    pygame.init()
 
     def __init__(self, window):
         super().__init__(window, bg="black")
@@ -453,6 +454,7 @@ class Keypad(PhaseThread):
                     # the combination is incorrect -> phase failed (strike)
                     else:
                         self._failed = True
+                        print("Its KEYPAD")
                         self._entered_value = ""
                 elif self._location == "rsa_tab_c":
                     if self.gui.c_entry.get() == "Enter the C-value":
@@ -551,6 +553,7 @@ class Wires(PhaseThread):
                         None
                     elif wire == "0":
                         self._failed = True
+                        print("Wires")
                     n += 1
             sleep(0.1)
 
@@ -650,8 +653,9 @@ class Toggles(PhaseThread):
         self._running = True
         self._value = ""
         while (self._running):
+            self._value = ""
             for togle in self._component:
-                if togle == True:
+                if togle.value == True:
                     self._value += "1"
                 else: 
                     self._value += "0"
@@ -663,7 +667,6 @@ class Toggles(PhaseThread):
             elif self._value == '1111':
                 sleep(0.1) 
             else:
-                print("TOGLES")
                 self._failed = True
         sleep(0.1)
 
