@@ -116,7 +116,7 @@ class Lcd(Frame):
         self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
         # the toggle switches status
-        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
+        self._lx = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
                                text="Toggles phase: ")
         self._ltoggles.grid(row=6, column=0, columnspan=2, sticky=W)
 
