@@ -570,9 +570,35 @@ class Button(PhaseThread):
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
 
+    #Updating RGB values based on their color
+    def update_color(self, color):
+        #Determining the value of the Red LED
+        if color == "R":
+            self._rgb[0].value = False
+        else:
+            self._rgb[0].value = True
+        
+        #Determining the value of the Green LED
+        if color == "G":
+            self._rgb[1].value = False
+        else:
+            self._rgb[1].value = True
+
+        #Determining the value of the Blue LED
+        if color == "B":
+            self._rgb[2].value = False
+        else:
+            self._rgb[2] = True
+        
+
     # runs the thread
     def run(self):
-        self._running = True
+        # self._running = True
+        # while self._running:
+        #     self.update_color(self._color)
+            #self._value = self._component.value
+
+        
         # set the RGB LED color
         self._rgb[0].value = False if self._color == "R" else True
         self._rgb[1].value = False if self._color == "G" else True
