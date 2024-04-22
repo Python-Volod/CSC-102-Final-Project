@@ -57,7 +57,7 @@ def setup_phases():
     #toggles2 = Toggles2(component_toggles2, toggles2_target)
 
     # setup sound
-    m_player = M_Player("radiation_sound.mp3", factor=(150)/COUNTDOWN)
+    m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
 
 
     # start the phase threads
@@ -77,6 +77,7 @@ def check_phases():
     if (timer._running):
         # update the GUI
         gui._ltimer["text"] = f"Time left: {timer}"
+        gui._lgeiger["text"] = f"Radiation emmited (in grays/second): {timer.return_radiation()}"
     else:
         # the countdown has expired -> explode!
         # turn off the bomb and render the conclusion GUI

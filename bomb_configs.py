@@ -20,7 +20,6 @@ import random
 import sympy
 import pygame
 from string import ascii_uppercase
-import pygame
 if (RPi):
     import board
     from adafruit_ht16k33.segments import Seg7x4

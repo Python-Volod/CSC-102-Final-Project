@@ -103,19 +103,22 @@ class Lcd(Frame):
         # the timer
         self._ltimer = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Time left: ")
         self._ltimer.grid(row=1, column=0, columnspan=3, sticky=W)
+        #
+        self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Radiation emmited (in grays/second): \n")
+        self._lgeiger.grid(row=2, column=0, columnspan=3, sticky=W)
         # the keypad passphrase
         self._lkeypad = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Keypad phase: ")
-        self._lkeypad.grid(row=2, column=0, columnspan=3, sticky=W)
+        self._lkeypad.grid(row=3, column=0, columnspan=3, sticky=W)
         # the jumper wires status
         self._lwires = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Wires phase: ")
-        self._lwires.grid(row=3, column=0, columnspan=3, sticky=W)
+        self._lwires.grid(row=4, column=0, columnspan=3, sticky=W)
         # the pushbutton status
         self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
-        self._lbutton.grid(row=4, column=0, columnspan=3, sticky=W)
+        self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
         # the toggle switches status
         self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
                                text="Toggles phase: ")
-        self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
+        self._ltoggles.grid(row=6, column=0, columnspan=2, sticky=W)
 
         '''
         self._ltoggles2 = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
@@ -318,6 +321,7 @@ class Timer(PhaseThread):
         # initialize the timer's minutes/seconds representation
         self._min = ""
         self._sec = ""
+        self.radiation = ""
         # by default, each tick is 1 second
         self._interval = 1
 
@@ -342,6 +346,7 @@ class Timer(PhaseThread):
     def _update(self):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
+        self.radiation = f"{(self._value % 60) * 3}".zfill(2)
 
     # pauses and unpauses the timer
     def pause(self):
@@ -349,6 +354,9 @@ class Timer(PhaseThread):
         self._paused = not self._paused
         # blink the 7-segment display when paused
         self._component.blink_rate = (2 if self._paused else 0)
+    
+    def return_radiation(self):
+        return f"{self.radiation}"
 
     # returns the timer as a string (mm:ss)
     def __str__(self):
