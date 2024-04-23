@@ -732,7 +732,7 @@ class Toggles2(PhaseThread): # second part of toggles
             # the combination is incorrect -> phase failed (strike)
             elif self._value == self.toggles_target:
                 sleep(0.1)
-            elif not self.toggles._running: # if combination is wrong and first toggle phase complete
+            elif not self.toggles.running: # if combination is wrong and first toggle phase complete
                 self._failed = True
             else:
                 sleep(0.1)

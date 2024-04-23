@@ -56,7 +56,11 @@ def setup_phases():
     toggles2 = Toggles2(component_toggles2, toggles2_target)
 
     # setup sound
+<<<<<<< HEAD
     #m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
+=======
+#     m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
+>>>>>>> parent of 3bb2117 (uncommented audio)
 
 
     # start the phase threads
