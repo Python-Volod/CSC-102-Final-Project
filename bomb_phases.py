@@ -136,11 +136,11 @@ class Lcd(Frame):
         # Label for toggle switches phase
         self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
                                text="Toggles phase: ")
-        self._ltoggles.grid(row=6, column=0, columnspan=2, sticky=W)
+        self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
 
         self._ltoggles2 = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
                                text="Toggles phase 2: ")
-        self._ltoggles2.grid(row=7, column=0, columnspan=2, sticky=W) # toggle part 2 status
+        self._ltoggles2.grid(row=5, column=0, columnspan=2, sticky=W) # toggle part 2 status
 
 
         # Label for the strikes left
@@ -345,6 +345,7 @@ class Timer(PhaseThread):
         self.radiation = ""
         # by default, each tick is 1 second
         self._interval = 1
+        self._exposure = 0
 
     # runs the thread
     def run(self):
@@ -367,7 +368,8 @@ class Timer(PhaseThread):
     def _update(self):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
-        self.radiation = f"{(self._value % 60) * 3}".zfill(2)
+        self._exposure += 1
+        self.radiation = f"{(self._exposure *5)/2: .2f}".zfill(2)
 
     # pauses and unpauses the timer
     def pause(self):
@@ -401,7 +403,7 @@ class M_Player(PhaseThread):
         })
         sound_with_adjusted_speed = sound_with_adjusted_speed[:50000]
         play(sound_with_adjusted_speed)
-        if self._running == True:
+        if self._running == True: # this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
             self.run()
 
@@ -668,7 +670,7 @@ class Button(PhaseThread):
             if button_color == "R":
                 return "RED"
             elif button_color == "G":
-                return "Green:
+                return "Green"
             elif button_color == "B":
                 return "BLUE"
             #return str("Pressed" if self._value else "Released")
