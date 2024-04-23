@@ -677,8 +677,10 @@ class Toggles(PhaseThread):
             # TODO
 
 class Toggles2(PhaseThread): # second part of toggles
-    def __init__(self, component, target, name="Toggles2"):
+    def __init__(self, component, target, toggles, name="Toggles2"):
         super().__init__(name, component, target)
+        self.toggles_target = toggles_target
+        self.toggles = toggles
 
     # runs the thread
     def run(self):
@@ -687,18 +689,18 @@ class Toggles2(PhaseThread): # second part of toggles
         while (self._running):
             self._value = ""
             for toggle in self._component:
-                if toggle == True:
+                if toggle:
                     self._value += "1"
                 else:
                     self._value += "0"
             # correct combo, button not blue, toggles part 1 defused -> toggles part 2 defused
             if (
-                    self._value == self._target) and button_color != "B" and (self.toggles._defused):
+                    self._value == self._target) and button_color != "B":
                 self._defused = True
             # the combination is incorrect -> phase failed (strike)
-            elif self._value == '0000':
+            elif self._value == self.toggles_target:
                 sleep(0.1)
-            elif self.toggles._defused: # if combination is wrong
+            elif not self.toggles.running: # if combination is wrong and first toggle phase complete
                 self._failed = True
             else:
                 sleep(0.1)
