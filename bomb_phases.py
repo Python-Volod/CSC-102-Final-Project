@@ -130,7 +130,7 @@ class Lcd(Frame):
         self._lwires.grid(row=4, column=0, columnspan=3, sticky=W)
         
         # Label for the Button phase
-        self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
+        self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button color: ")
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
        
         # Label for toggle switches phase
@@ -665,7 +665,13 @@ class Button(PhaseThread):
         if (self._defused):
             return "DEFUSED"
         else:
-            return str("Pressed" if self._value else "Released")
+            if button_color == "R":
+                return "RED"
+            elif button_color == "G":
+                return "Green:
+            elif button_color == "B":
+                return "BLUE"
+            #return str("Pressed" if self._value else "Released")
 
 
 # the toggle switches phase
@@ -701,7 +707,6 @@ class Toggles(PhaseThread):
             return "DEFUSED"
         else:
             return "ARMED"
-            # TODO
 
 class Toggles2(PhaseThread): # second part of toggles
     def __init__(self, component, target, toggles, name="Toggles2"):

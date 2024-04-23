@@ -56,7 +56,7 @@ def setup_phases():
     toggles2 = Toggles2(component_toggles2, toggles2_target)
 
     # setup sound
-     m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
+    #m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
 
 
     # start the phase threads
@@ -66,7 +66,7 @@ def setup_phases():
     button.start()
     toggles.start()
     toggles2.start()
-    m_player.start()
+    #m_player.start()
 
 
 # checks the phase threads
