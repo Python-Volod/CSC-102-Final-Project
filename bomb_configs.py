@@ -117,6 +117,10 @@ def genSerial():
     jumper_value = int("".join([ str(n) for n in jumper_indexes ]), 2) # print integer
     jumper_letters = [ chr(i + 65) for i, n in enumerate(jumper_indexes) if n == 1 ] # put letters in list
 
+    # check if toggle2_value will = toggle_value
+    if int(sum(ord(n) - 64 for n in jumper_letters)) == toggle_value:
+        jumper_letters[len(jumper_letters) - 1] = chr(ord(jumper_letters[len(jumper_letters)-1])+1) # increase last letter by 1
+
     # convert jumper_letters elements into their ASCII value, subtract by 64 (so A=1, B=2, etc.) and get the sum
     toggle2_value = sum(ord(n) - 64 for n in jumper_letters)
 
