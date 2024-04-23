@@ -14,9 +14,11 @@ from tkinter import *
 from PIL import ImageTk, Image
 import tkinter
 from threading import Thread
-from time import sleep
+from time import sleep, time
 import os
 import sys
+from random import randint
+
 
 
 #########
@@ -617,40 +619,46 @@ class Button(PhaseThread):
         else:
             self._rgb[2] = True
         
+    # Function to pick new color
+    def pick_new_color(self):
+        # Picking a random color different from the current color
+        colors = ["R", "G", "B"]
+        # Removing the current color from the list of possible colors
+        colors.remove(self._current_color)
+        # Picking a random color from the list of possible colors
+        new_color = random.choice(colors)
+        return new_color
+    
+    #Function to generate a random color change
+    def random_color_change(self):
+        return randint(1, 40)
 
     # runs the thread
     def run(self):
-        self._running = True
-        # while self._running:
-        #     self.update_color(self._color)
-            #self._value = self._component.value
+        self.running = True
+        next_color_change = time() + self.random_color_change()
 
-        
-        # set the RGB LED color
-        self._rgb[0].value = False if self._color == "R" else True
-        self._rgb[1].value = False if self._color == "G" else True
-        self._rgb[2].value = False if self._color == "B" else True
-        while (self._running):
-            # get the pushbutton's state
+        while self._running:
+            #Setting the first RGB color
+            self.update_color(self._color)
+
+            #Updating the current value
             self._value = self._component.value
-            # it is pressed
-            if (self._value):
-                # note it
+            if self._value:
                 self._pressed = True
-            # it is released
             else:
-                # was it previously pressed?
-                if (self._pressed):
-                    # check the release parameters
-                    # for R, nothing else is needed
-                    # for G or B, a specific digit must be in the timer (sec) when released
-                    if (not self._target or self._target in self._timer._sec):
+                if self._pressed:
+                    if not self._target or self._target in self._timer._sec:
                         self._defused = True
                     else:
                         self._failed = True
-                    # note that the pushbutton was released
                     self._pressed = False
-            sleep(0.1)
+
+            if time.time() >= next_color_change:
+                self._color = self.pick_new_color()
+                self.update_color(self._color)
+                next_color_change = time() + self.random_color_change()
+            time.sleep(0.1)
 
     # returns the pushbutton's state as a string
     def __str__(self):
