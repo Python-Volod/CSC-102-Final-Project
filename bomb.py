@@ -53,7 +53,7 @@ def setup_phases():
     # setup the toggle switches thread
     toggles = Toggles(component_toggles, toggles_target)
 
-    toggles2 = Toggles2(component_toggles2, toggles2_target)
+    toggles2 = Toggles2(component_toggles2, toggles2_target, toggles_target)
 
     # setup sound
 
