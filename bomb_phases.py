@@ -25,11 +25,13 @@ import sys
 
 
 def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
+    # Converting entries to integers
     ciphertext = int(c_entry.get())
     p = int(p_entry.get())
     q = int(q_entry.get())
     e = int(e_entry.get())
 
+    # Trying to compute RSA parameters
     try:
         n = p * q
         # Calculate phi(n)
@@ -46,18 +48,26 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
     except:
         main_label.configure(text='Error occurred. Try again.')
         return
+    
+    # Convert the plaintext to a string
     plaintext_string = ""
     while plaintext:
         plaintext_string += chr(plaintext & 0xFF)
         plaintext >>= 8
+
+    #Reversing the constructed string to get the original string
     plaintext_string = plaintext_string[::-1]
+
+    # Check if the plaintext is not predefined words list
     if (plaintext_string not in words):
         if ([p, q] == global_keys[2]) and (ciphertext == encoded_keyword):
             main_label.configure(text="The key is {}".format(keyword))
             return
+        # Handaling incorrect inputs
         else:
             main_label.configure(text="Incorect input, try again")
             return
+    #Displaying the decrypted plaintext
     main_label.configure(text="The key is {}".format(plaintext_string))
 
 
@@ -92,6 +102,7 @@ class Lcd(Frame):
         self.main_tab.columnconfigure(0, weight=1)
         self.main_tab.columnconfigure(1, weight=2)
         self.main_tab.columnconfigure(2, weight=1)
+        
         # the scrolling informative "boot" text
         self._lscroll = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="", justify=LEFT)
         self._lscroll.grid(row=0, column=0, columnspan=3, sticky=W)
@@ -99,23 +110,28 @@ class Lcd(Frame):
 
     # sets up the LCD GUI
     def setup(self):
-        # Setup the main_tab
-        # the timer
+        # Setting ut the main tab with different labels
+        # Label to display the timer 
         self._ltimer = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Time left: ")
         self._ltimer.grid(row=1, column=0, columnspan=3, sticky=W)
-        #
+        
+        # Label to display the radiation emmited
         self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Radiation emmited (in grays/second): \n")
         self._lgeiger.grid(row=2, column=0, columnspan=3, sticky=W)
-        # the keypad passphrase
+        
+        # Label for the keypad phase 
         self._lkeypad = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Keypad phase: ")
         self._lkeypad.grid(row=3, column=0, columnspan=3, sticky=W)
-        # the jumper wires status
+        
+        # Label for wires phase
         self._lwires = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Wires phase: ")
         self._lwires.grid(row=4, column=0, columnspan=3, sticky=W)
-        # the pushbutton status
+        
+        # Label for the Button phase
         self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button phase: ")
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
-        # the toggle switches status
+       
+        # Label for toggle switches phase
         self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
                                text="Toggles phase: ")
         self._ltoggles.grid(row=6, column=0, columnspan=2, sticky=W)
@@ -125,26 +141,29 @@ class Lcd(Frame):
         self._ltoggles2.grid(row=7, column=0, columnspan=2, sticky=W) # toggle part 2 status
 
 
-        # the strikes left
+        # Label for the strikes left
         self._lstrikes = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Strikes left: ")
         self._lstrikes.grid(row=5, column=2, sticky=W)
 
+        # Condition for pausing or quitting
         if (SHOW_BUTTONS):
-            # the pause button (pauses the timer)
+            # Pause
             self._bpause = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Pause",
                                           anchor=CENTER, command=self.pause)
             self._bpause.grid(row=6, column=0, pady=40)
-            # the quit button
+            # Quit
             self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit",
                                          anchor=CENTER, command=self.quit)
             self._bquit.grid(row=6, column=2, pady=40)
-        # Setup the RSA tab 
+        
+        # Setup the RSA tab created with help of Chat GPT
         # Main function for the RSA that decrypts using user entered values 
-        # created created with help of Chat GPT
         # Feedback for the user
         self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="#00ff00",
                                 anchor=CENTER, font=("Courier New", 18), bg="black")
         self.main_label.place(relx=0.5, rely=0.1, anchor=CENTER)
+
+        # Loading and displaying radiation danger images
         self.img1 = Image.open("visual/rad_dan.png")
         self.img1 = self.img1.resize((150, 150), Image.ANTIALIAS)
         self.img1 = ImageTk.PhotoImage(self.img1)
@@ -152,7 +171,7 @@ class Lcd(Frame):
         self.right_image_label = Label(self.rsa_tab, image=self.img1, height=150, width=150, bg="black")
         self.left_image_label.place(relx=0.05, rely=0.5)
         self.right_image_label.place(relx=0.75, rely=0.5)
-        # self.right_image_label.place(relx=0.75, rely=0.45)
+        
         # Fields for user to enter values and button to decode using the given information
         self.text_c = StringVar()
         self.text_c.set('Enter the C-value')
