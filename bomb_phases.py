@@ -605,28 +605,28 @@ class Button(PhaseThread):
     def update_color(self, color):
         #Determining the value of the Red LED
         if color == "R":
-            self._rgb[0].value = False
-        else:
             self._rgb[0].value = True
+        else:
+            self._rgb[0].value = False
         
         #Determining the value of the Green LED
         if color == "G":
-            self._rgb[1].value = False
-        else:
             self._rgb[1].value = True
+        else:
+            self._rgb[1].value = False
 
         #Determining the value of the Blue LED
         if color == "B":
-            self._rgb[2].value = False
-        else:
             self._rgb[2].value = True
+        else:
+            self._rgb[2].value = False
         
     # Function to pick new color
     def pick_new_color(self):
         # Picking a random color different from the current color
         colors = ["R", "G", "B"]
         # Removing the current color from the list of possible colors
-        colors.remove(self._current_color)
+        #colors.remove(self._current_color)
         # Picking a random color from the list of possible colors
         new_color = random.choice(colors)
         return new_color
@@ -635,14 +635,20 @@ class Button(PhaseThread):
     def random_color_change(self):
         return randint(1, 40)
 
+    def button_color_is_B (self):
+        if self._color == "B":
+            return True
+        else:
+            return False
+
     # runs the thread
     def run(self):
+        self._rgb[0].value = True
         self.running = True
-        next_color_change = time.time() + self.random_color_change()
+        #next_color_change = time.time() + self.random_color_change()
 
         while self._running:
             #Setting the first RGB color
-            self.update_color(self._color)
 
             #Updating the current value
             self._value = self._component.value
@@ -695,7 +701,7 @@ class Toggles(PhaseThread):
 
             # the combination is correct -> phase defused
             if (
-                    self._value == self._target) and button_color != "B":  # correct combination, button color not blue
+                    self._value == self._target) and Button.button_color_is_B() == False:  # correct combination, button color not blue
                 self._defused = True # defuse this phase
             elif self._value == '0000': # ignore toggle values if all off
                 sleep(0.1) 
@@ -729,7 +735,8 @@ class Toggles2(PhaseThread): # second part of toggles
                     self._value += "0"
             # correct combo, button not blue, toggles part 1 defused -> toggles part 2 defused
             if (
-                    self._value == self._target) and button_color != "B":
+                    self._value == self._target):
+                    #self._value == self._target) and Button.button_color_is_B() == False:
                 self._defused = True
             # the combination is incorrect -> phase failed (strike)
             elif self._value == self.toggles_target:
