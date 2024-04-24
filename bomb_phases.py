@@ -554,7 +554,7 @@ class Wires(PhaseThread):
         self._running = True
         while (self._running):
             self._value = ""
-            # get the pushbutton's state
+            # get the wire's state
             for wire in self._component:
                 if wire.value == True:
                     self._value += "1"
@@ -693,7 +693,7 @@ class Toggles(PhaseThread):
         while (self._running):
             self._value = "" # reset value
             for toggle in self._component:
-                if toggle == True: # if toggle component is on, value adds 1
+                if toggle: # if toggle component is on, value adds 1
                     self._value += "1"
                 else: 
                     self._value += "0" # add a "0" if toggle component is off
@@ -712,7 +712,7 @@ class Toggles(PhaseThread):
 
             if part2:
                 if (
-                        self._value == self._target2) and Button.button_color_is_B() == False:  # correct combination, button color not blue
+                        self._value == self._target2) and (not Button.button_color_is_B()):  # correct combination, button color not blue
 
                     self._defused = True # **** this is to defuse the entire thing
                 elif self._value == self._target:  # ignore toggle values if all off
@@ -728,4 +728,3 @@ class Toggles(PhaseThread):
             return "DEFUSED"
         else:
             return "ARMED"
-
