@@ -79,7 +79,7 @@ def check_phases():
     if (timer._running):
         # update the GUI
         gui._ltimer["text"] = f"Time left: {timer}"
-        gui._lgeiger["text"] = f"Radiation emmited (in grays/second): {timer.return_radiation()}"
+        gui._lgeiger["text"] = f"Total radiation emmited(in Grays): {timer.return_radiation()}"
     else:
         # the countdown has expired -> explode!
         # turn off the bomb and render the conclusion GUI
