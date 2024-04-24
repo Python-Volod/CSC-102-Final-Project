@@ -645,7 +645,7 @@ class Button(PhaseThread):
     def run(self):
         self._rgb[0].value = True
         self.running = True
-        #next_color_change = time.time() + self.random_color_change()
+        next_color_change = time() + self.random_color_change()
 
         while self._running:
             #Setting the first RGB color
@@ -662,11 +662,11 @@ class Button(PhaseThread):
                         self._failed = True
                     self._pressed = False
 
-            if time.time() >= next_color_change:
+            if time() >= next_color_change:
                 self._color = self.pick_new_color()
                 self.update_color(self._color)
-                next_color_change = time.time() + self.random_color_change()
-            time.sleep(0.1)
+                next_color_change = time() + self.random_color_change()
+            sleep(0.1)
 
     # returns the pushbutton's state as a string
     def __str__(self):
