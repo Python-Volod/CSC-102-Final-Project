@@ -5,8 +5,8 @@
 #################################
 
 # constants
-DEBUG = False        # debug mode?
-RPi = True           # is this running on the RPi?
+DEBUG = True        # debug mode?
+RPi = False           # is this running on the RPi?
 ANIMATE = False       # animate the LCD text?
 SHOW_BUTTONS = True # show the Pause and Quit buttons on the main LCD GUI?
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
@@ -88,11 +88,6 @@ if (RPi):
         pin.direction = Direction.INPUT
         pin.pull = Pull.DOWN
 
-    component_toggles2 = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
-    for pin in component_toggles2:
-        # pins are input and pulled down
-        pin.direction = Direction.INPUT
-        pin.pull = Pull.DOWN
 
 ###########
 # functions
@@ -187,7 +182,6 @@ keyword, encoded_keyword, p, q, e = genKeypadCombination()
 # generate the bomb's serial number (which also gets us the toggle and jumper target values)
 #  serial: the bomb's serial number
 #  toggles_target: the toggles phase defuse value
-#  toggle2_target: the second toggles phase defuse value
 #  wires_target: the wires phase defuse value
 serial, toggles_target, wires_target, toggles2_target = genSerial()
 

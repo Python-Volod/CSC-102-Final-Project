@@ -138,9 +138,6 @@ class Lcd(Frame):
                                text="Toggles phase: ")
         self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
 
-        self._ltoggles2 = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
-                               text="Toggles phase 2: ")
-        self._ltoggles2.grid(row=5, column=0, columnspan=2, sticky=W) # toggle part 2 status
 
 
         # Label for the strikes left
@@ -276,7 +273,6 @@ class Lcd(Frame):
         self._lwires.destroy()
         self._lbutton.destroy()
         self._ltoggles.destroy()
-        self._ltoggles2.destroy()
         self._lstrikes.destroy()
         self.rsa_tab.destroy()
         if (SHOW_BUTTONS):
@@ -315,7 +311,7 @@ class Lcd(Frame):
 
 # template (superclass) for various bomb components/phases
 class PhaseThread(Thread):
-    def __init__(self, name, component=None, target=None):
+    def __init__(self, name, component=None, target=None, target2=None):
         super().__init__(name=name, daemon=True)
         # phases have an electronic component (which usually represents the GPIO pins)
         self._component = component
@@ -329,6 +325,8 @@ class PhaseThread(Thread):
         self._value = None
         # phase threads are either running or not
         self._running = False
+
+        self._target2 = target2 # for toggles phase
 
 
 # the timer phase
@@ -684,13 +682,14 @@ class Button(PhaseThread):
 
 # the toggle switches phase
 class Toggles(PhaseThread):
-    def __init__(self, component, target, name="Toggles"):
-        super().__init__(name, component, target)
+    def __init__(self, component, target, target2, name="Toggles"):
+        super().__init__(name, component, target, target2)
 
     # runs the thread
     def run(self):
         self._running = True
         self._value = ""
+        part2 = False
         while (self._running):
             self._value = "" # reset value
             for toggle in self._component:
@@ -700,13 +699,27 @@ class Toggles(PhaseThread):
                     self._value += "0" # add a "0" if toggle component is off
 
             # the combination is correct -> phase defused
-            if (
-                    self._value == self._target) and Button.button_color_is_B() == False:  # correct combination, button color not blue
-                self._defused = True # defuse this phase
-            elif self._value == '0000': # ignore toggle values if all off
-                sleep(0.1) 
-            else:
-                self._failed = True
+            if not part2:
+                if (
+                        self._value == self._target) and Button.button_color_is_B() == False:  # correct combination, button color not blue
+
+                    #self._defused = True # **** this is to defuse the entire thing
+                    part1 = True
+                elif self._value == '0000': # ignore toggle values if all off
+                    sleep(0.1)
+                else:
+                    self._failed = True
+
+            if part2:
+                if (
+                        self._value == self._target2) and Button.button_color_is_B() == False:  # correct combination, button color not blue
+
+                    self._defused = True # **** this is to defuse the entire thing
+                elif self._value == self._target:  # ignore toggle values if all off
+                    sleep(0.1)
+                else:
+                    self._failed = True
+
         sleep(0.1)
 
     # returns the toggle switches state as a string
@@ -716,40 +729,3 @@ class Toggles(PhaseThread):
         else:
             return "ARMED"
 
-class Toggles2(PhaseThread): # second part of toggles
-    def __init__(self, component, target, toggles, name="Toggles2"):
-        super().__init__(name, component, target)
-        self.toggles_target = toggles_target
-        self.toggles = toggles
-
-    # runs the thread
-    def run(self):
-        self._running = True
-        self._value = ""
-        while (self._running):
-            self._value = ""
-            for toggle in self._component:
-                if toggle:
-                    self._value += "1"
-                else:
-                    self._value += "0"
-            # correct combo, button not blue, toggles part 1 defused -> toggles part 2 defused
-            if (
-                    self._value == self._target):
-                    #self._value == self._target) and Button.button_color_is_B() == False:
-                self._defused = True
-            # the combination is incorrect -> phase failed (strike)
-            elif self._value == self.toggles_target:
-                sleep(0.1)
-            elif not self._running: # if combination is wrong and first toggle phase complete
-                self._failed = True
-            else:
-                sleep(0.1)
-        sleep(0.1)
-
-    # returns the toggle switches state as a string
-    def __str__(self):
-        if (self._defused):
-            return "DEFUSED"
-        else:
-            return "ARMED"

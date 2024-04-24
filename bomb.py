@@ -36,7 +36,7 @@ def bootup(n=0):
 
 # sets up the phase threads
 def setup_phases():
-    global timer, keypad, wires, button, toggles, toggles2
+    global timer, keypad, wires, button, toggles
     
     # setup the timer thread
     timer = Timer(component_7seg, COUNTDOWN)
@@ -51,9 +51,7 @@ def setup_phases():
     # bind the pushbutton to the LCD GUI so that its LED can be turned off when we quit
     gui.setButton(button)
     # setup the toggle switches thread
-    toggles = Toggles(component_toggles, toggles_target)
-
-    toggles2 = Toggles2(component_toggles2, toggles2_target, toggles_target)
+    toggles = Toggles(component_toggles, toggles_target, toggles2_target)
 
     # setup sound
     m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
@@ -65,7 +63,6 @@ def setup_phases():
     wires.start()
     button.start()
     toggles.start()
-    toggles2.start()
     m_player.start()
 
 
@@ -139,20 +136,6 @@ def check_phases():
             # reset the toggles
             toggles._failed = False
 
-    if (toggles2._running):
-        # update the GUI
-        gui._ltoggles2["text"] = f"Toggles2: {toggles2}"
-        # the phase is defused -> stop the thread
-        if (toggles2._defused):
-            toggles2._running = False
-            active_phases -= 1
-        # the phase has failed -> strike
-        elif (toggles2._failed):
-            strike()
-            # reset the toggles
-            toggles2._failed = False
-
-
 
 
     # note the strikes on the GUI
@@ -191,7 +174,6 @@ def turn_off():
     wires._running = False
     button._running = False
     toggles._running = False
-    toggles2._running = False
 
     # turn off the 7-segment display
     component_7seg.blink_rate = 0
