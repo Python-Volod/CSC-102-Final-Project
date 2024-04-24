@@ -78,7 +78,6 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
 #########
 # the LCD display GUI
 class Lcd(Frame):
-    pygame.init()
 
     def __init__(self, window):
         super().__init__(window, bg="black")
@@ -703,12 +702,11 @@ class Toggles(PhaseThread):
 
             # the combination is correct -> phase defused
             if not part2:
-                if (
-                        self._value == self._target) and Button.button_color_is_B() == False:  # correct combination, button color not blue
+                if (self._value == self._target) and Button.button_color_is_B() == False:  # correct combination, button color not blue
 
                     #self._defused = True # **** this is to defuse the entire thing
                     part1 = True
-                elif self._value == '0000': # ignore toggle values if all off
+                elif self._value == '0000' or self._value == "1111": # ignore toggle values if all off
                     sleep(0.1)
                 else:
                     self._failed = True

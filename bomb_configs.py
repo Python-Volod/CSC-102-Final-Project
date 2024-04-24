@@ -18,7 +18,6 @@ from random import randint, shuffle, choice
 from Cryptodome.Util.number import bytes_to_long
 import random
 import sympy
-import pygame
 from string import ascii_uppercase
 if (RPi):
     import board
