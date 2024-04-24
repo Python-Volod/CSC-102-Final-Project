@@ -118,7 +118,7 @@ class Lcd(Frame):
         self._ltimer.grid(row=1, column=0, columnspan=3, sticky=W)
         
         # Label to display the radiation emmited
-        self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Radiation emmited (in grays/second): \n")
+        self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Radiation exposure (in Grays): \n")
         self._lgeiger.grid(row=2, column=0, columnspan=3, sticky=W)
         
         # Label for the keypad phase 
@@ -369,7 +369,7 @@ class Timer(PhaseThread):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
         self._exposure += 1
-        self.radiation = f"{(self._exposure *5)/2: .2f}".zfill(2)
+        self.radiation = f"{(self._exposure *3)/2: .2f}".zfill(2)
 
     # pauses and unpauses the timer
     def pause(self):
