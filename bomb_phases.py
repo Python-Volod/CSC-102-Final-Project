@@ -653,7 +653,10 @@ class Button(PhaseThread):
             if self._value:
                 self._pressed = True
             else:
+                #When Button is pressed colors change
                 if self._pressed:
+                    self._color = self.pick_new_color()
+                    self.update_color(self._color)
                     if not self._target or self._target in self._timer._sec:
                         self._defused = True
                     else:
