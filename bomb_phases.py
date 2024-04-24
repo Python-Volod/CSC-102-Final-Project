@@ -401,7 +401,7 @@ class M_Player(PhaseThread):
         sound_with_adjusted_speed = sound._spawn(sound.raw_data, overrides={
             "frame_rate": int(sound.frame_rate * self.factor)
         })
-        sound_with_adjusted_speed = sound_with_adjusted_speed[:50000]
+        sound_with_adjusted_speed = sound_with_adjusted_speed[:44000]
         play(sound_with_adjusted_speed)
         if self._running == True: # this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
