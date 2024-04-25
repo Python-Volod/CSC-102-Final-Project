@@ -452,7 +452,7 @@ class M_Player(PhaseThread):
     
     def play(self, song):
         sound = AudioSegment.from_file("sounds/" + song)
-        play(sound)
+        #play(sound)
 
 
 
@@ -620,9 +620,9 @@ class Wires(PhaseThread):
                 for wire in self._value:
                     if wire == self._target[n]:
                         None
-                    elif wire == "0" and self.wires_failed[n] == False:
+                    elif ((wire == "0") and (self.wires_failed[n] == False)) == True:
                         self._failed = True
-                        self.wires_failed[n] == True
+                        self.wires_failed[n] = True
                     n += 1
             sleep(0.1)
 
@@ -735,42 +735,69 @@ class Button(PhaseThread):
 
 # the toggle switches phase
 class Toggles(PhaseThread):
-    def __init__(self, component, target, target2, name="Toggles"):
-        super().__init__(name, component, target, target2)
+    def __init__(self, component, target, target2,button, name="Toggles"):
+        super().__init__(name, component, str(bin(target))[-4:].replace("b", "0"), str(bin(target2))[-4:].replace("b", "0"))
+        print("Toggle target1:", self._target)
+        print("Toggle target:", self._target2)
+        self.button = button
+        self.toggles_failed = [False, False, False, False, False]
 
     # runs the thread
     def run(self):
+        print("RUn")
         self._running = True
         self._value = ""
         part2 = False
         while (self._running):
             self._value = "" # reset value
             for toggle in self._component:
-                if toggle: # if toggle component is on, value adds 1
+                if toggle.value: # if toggle component is on, value adds 1
                     self._value += "1"
                 else: 
                     self._value += "0" # add a "0" if toggle component is off
-
             # the combination is correct -> phase defused
             if not part2:
-                if (self._value == self._target) and Button.button_color_is_B() == False:  # correct combination, button color not blue
+                if (self._value == self._target) and self.button.button_color_is_B() == False:  # correct combination, button color not blue
 
                     #self._defused = True # **** this is to defuse the entire thing
-                    part1 = True
+                    part2 = True
+                    self.toggles_failed = [False, False, False, False, False]
+                    print("DONE")
                 elif self._value == '0000' or self._value == "1111": # ignore toggle values if all off
                     sleep(0.1)
                 else:
-                    self._failed = True
+                    if self.button.button_color_is_B() == True:
+                        self._failed = True
+                    else:
+                        n = 0
+                        for toggle in self._value:
+                            if toggle == self._target[n]:
+                                None
+                            elif ((toggle == "0") and (self.toggles_failed[n] == False)) == True:
+                                self._failed = True
+                                self.toggles_failed[n] = True
+                            n += 1
+                            
 
             if part2:
                 if (
-                        self._value == self._target2) and (not Button.button_color_is_B()):  # correct combination, button color not blue
+                        self._value == self._target2) and (not self.button.button_color_is_B()):  # correct combination, button color not blue
 
                     self._defused = True # **** this is to defuse the entire thing
-                elif self._value == self._target:  # ignore toggle values if all off
+                elif self._value == self._target or self._value == '0000' or self._value == "1111":  # ignore toggle values if all off
                     sleep(0.1)
                 else:
-                    self._failed = True
+                    if self.button.button_color_is_B() == True:
+                        self._failed = True
+                    else:
+                        n = 0
+                        for toggle in self._value:
+                            if toggle == self._target2[n]:
+                                None
+                            elif ((toggle == "0") and (self.toggles_failed[n] == False)) == True:
+                                self._failed = True
+                                self.toggles_failed[n] = True
+                            n += 1
 
         sleep(0.1)
 
