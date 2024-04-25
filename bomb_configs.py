@@ -5,10 +5,10 @@
 #################################
 
 # constants
-DEBUG = True        # debug mode?
+DEBUG = True         # debug mode?
 RPi = True           # is this running on the RPi?
-ANIMATE = False       # animate the LCD text?
-SHOW_BUTTONS = True # show the Pause and Quit buttons on the main LCD GUI?
+ANIMATE = False      # animate the LCD text?
+SHOW_BUTTONS = True  # show the Pause and Quit buttons on the main LCD GUI?
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"
 NUM_PHASES = 5       # the total number of initial active bomb phases
@@ -123,7 +123,7 @@ def genSerial():
     shuffle(serial) # shuffle values in random order
 
     serial = "".join(serial) # make string
-    return serial, toggle_value, jumper_value, toggle2_value # return the values
+    return serial, str(toggle_value), jumper_value, str(toggle2_value) # return the values
 
 # generates the keypad combination by encoding a random keyword using rsa
 def genKeypadCombination():    
@@ -205,8 +205,8 @@ elif (button_color == "B"):
 
 if (DEBUG): # check if in debug mode
     print(f"Serial number: {serial}")
-    print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}") # print binary representation of toggles_target, without it beginning with "0b"
-    print(f"Toggles2 target: {bin(toggles2_target)[2:].zfill(4)}/{toggles2_target}") # .zfill(4) to ensure 4 digits /{target as a decimal}
+    print(f"Toggles target: {bin(int(toggles_target))[2:].zfill(4)}/{toggles_target}") # print binary representation of toggles_target, without it beginning with "0b"
+    print(f"Toggles2 target: {bin(int(toggles2_target))[2:].zfill(4)}/{toggles2_target}") # .zfill(4) to ensure 4 digits /{target as a decimal}
     print(f"Wires target: {bin(int(wires_target))[2:].zfill(5)}/{wires_target}")
     print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with p:q - {p}:{q} and e : {e}")
     print(f"Button target: {button_target}")

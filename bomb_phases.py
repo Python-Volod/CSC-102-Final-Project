@@ -733,12 +733,11 @@ class Button(PhaseThread):
 
 
 # the toggle switches phase
-class Toggles(PhaseThread):
-    def __init__(self, component, target, target2,button, name="Toggles"):
-        super().__init__(name, component, str(bin(target))[-4:].replace("b", "0"), str(bin(target2))[-4:].replace("b", "0"))
-        print("Toggle target1:", self._target)
-        print("Toggle target:", self._target2)
-        self.button = button
+class Toggles(PhaseThread): #s.zfill(4)[:4]
+    def __init__(self, component, target, target2, name="Toggles"):
+        super().__init__(name, component, (bin(int(target)).zfill(4)[-4:].replace("b", "0"), (bin(int(target2)).zfill(4)[-4:].replace("b", "0"))))
+        # self.button = button
+        # old target = str(bin(target))[-4:].replace("b","0")
         self.toggles_failed = [False, False, False, False]
 
     # runs the thread
