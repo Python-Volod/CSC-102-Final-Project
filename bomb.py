@@ -9,6 +9,11 @@ from bomb_configs import *
 # import the phases
 from bomb_phases import *
 
+#####
+# Setup sounds
+#####
+m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
+
 ###########
 # functions
 ###########
@@ -53,9 +58,6 @@ def setup_phases():
     # setup the toggle switches thread
     toggles = Toggles(component_toggles, toggles_target, toggles2_target)
 
-    # setup sound
-    m_player = M_Player("radiation_sound.mp3", factor=(250)/COUNTDOWN)
-
 
     # start the phase threads
     timer.start()
@@ -74,7 +76,7 @@ def check_phases():
     if (timer._running):
         # update the GUI
         gui._ltimer["text"] = f"Time left: {timer}"
-        gui._lgeiger["text"] = f"Total radiation emmited(in Grays): {timer.return_radiation()}"
+        gui._lgeiger["text"] = f"Radiation exposure (in Grays): {timer.return_radiation()}"
     else:
         # the countdown has expired -> explode!
         # turn off the bomb and render the conclusion GUI
@@ -188,7 +190,9 @@ def turn_off():
 
 # initialize the LCD GUI
 window = Tk()
-gui = Lcd(window)
+window.attributes("-fullscreen", True)
+window.update()
+gui = Lcd(window, m_player)
 
 # initialize the bomb strikes and active phases (i.e., not yet defused)
 strikes_left = NUM_STRIKES
