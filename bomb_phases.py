@@ -79,35 +79,81 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
 # the LCD display GUI
 class Lcd(Frame):
 
-    def __init__(self, window):
+    def __init__(self, window, m_player):
         super().__init__(window, bg="black")
         # make the GUI fullscreen
-        window.attributes("-fullscreen", True)
+        self.window = window
+        self.window.configure(bg='black')
         # we need to know about the timer (7-segment display) to be able to pause/unpause it
         self._timer = None
         # we need to know about the pushbutton to turn off its LED when the program exits
         self._button = None
-        # setup the initial "boot" GUI
+        self.m_player = m_player
+        # Setup the boot
         self.setupBoot()
 
     # sets up the LCD "boot" GUI
     def setupBoot(self):
+        self.window.attributes("-fullscreen", True)
+        self.window.update()
         # set column weights
+        self._intro_text = Label(self.window, bg="black", fg="#00ff00", font=("Courier New", 18), text="DEVICE ACTIVATION HAS BEEN INITIATED")
+        #loading screen + loading intro text
+        self.img_intro = Image.open("visual/stalker.gif")
+        self.img_intro = self.img_intro.resize((200, 200), Image.Resampling.LANCZOS)
+        self.img_intro = ImageTk.PhotoImage(self.img_intro)
+        self.img_portal = Image.open("visual/portal2.png")
+        self.img_portal = self.img_portal.resize((20, 20), Image.Resampling.LANCZOS)
+        self.img_portal = ImageTk.PhotoImage(self.img_portal)
+        self._introlabel = Label(self.window, bg= "black", image=self.img_intro)
+        self._secret = Label(self.window, bg= "black", image=self.img_portal)
+        self._introlabel.place(relx=0.37, rely=0.30)
+        self._secret.place(relx=0, rely=0.95)
+        self._intro_text.place(relx=0.18, rely=0.15)
+        self.update()
+        self.window.update()
+        sleep(2)
+
+        # Call the play_sounds function after a delay
+        self.play_sounds()
+
+        # Display the GUI
+        self.update()
+        
         # create two main tabs of GUI, one for general information and the other is for RSA decryption
-        self.tabs = tkinter.ttk.Notebook(self)
-        self.main_tab = tkinter.Frame(self.tabs, bg="black")
+        self.tabs = tkinter.ttk.Notebook(self.window)
+        self.main_tab = tkinter.Frame(self.tabs, bg="black", height=self.window.winfo_screenheight())
         self.rsa_tab = tkinter.Frame(self.tabs, bg="black")
         self.tabs.add(self.main_tab, text="MAIN")
         self.tabs.add(self.rsa_tab, text="RSA")
-        self.tabs.pack(fill=BOTH, expand=1)
+        self.tabs.pack(fill=tkinter.BOTH, expand=1)
+        self.main_tab.grid_propagate(False)
         self.main_tab.columnconfigure(0, weight=1)
-        self.main_tab.columnconfigure(1, weight=2)
+        self.main_tab.columnconfigure(1, weight=1)
         self.main_tab.columnconfigure(2, weight=1)
+
+
         
         # the scrolling informative "boot" text
         self._lscroll = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="", justify=LEFT)
         self._lscroll.grid(row=0, column=0, columnspan=3, sticky=W)
         self.pack(fill=BOTH, expand=True)
+        self.update()
+
+    def destroy_intro_labels(self):
+        self._introlabel.destroy()
+        self._secret.destroy()
+        self._intro_text.destroy()
+
+    def play_sounds(self):
+        self.update()
+        self.window.attributes("-fullscreen", True)
+        self.window.update()
+        self.m_player.play("Intro_Message.wav")
+        self.m_player.play("start_alarm.mp3")
+        # Schedule destruction of intro labels after sounds have finished playing
+        self.destroy_intro_labels()
+
 
     # sets up the LCD GUI
     def setup(self):
@@ -133,8 +179,7 @@ class Lcd(Frame):
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
        
         # Label for toggle switches phase
-        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
-                               text="Toggles phase: ")
+        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Toggles phase: ")
         self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
 
 
@@ -267,6 +312,7 @@ class Lcd(Frame):
     def conclusion(self, success=False):
         # destroy/clear widgets that are no longer needed
         self._lscroll["text"] = ""
+        self._lgeiger.destroy()
         self._ltimer.destroy()
         self._lkeypad.destroy()
         self._lwires.destroy()
@@ -366,7 +412,7 @@ class Timer(PhaseThread):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
         self._exposure += 1
-        self.radiation = f"{(self._exposure *4)/2000: .2f}".zfill(2)
+        self.radiation = f"{(self._exposure *12)/2000: .2f}".zfill(2)
 
     # pauses and unpauses the timer
     def pause(self):
@@ -403,6 +449,11 @@ class M_Player(PhaseThread):
         if self._running == True: # this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
             self.run()
+    
+    def play(self, song):
+        sound = AudioSegment.from_file("sounds/" + song)
+        play(sound)
+
 
 
 # the keypad phase
@@ -547,6 +598,7 @@ class Keypad(PhaseThread):
 class Wires(PhaseThread):
     def __init__(self, component, target, name="Wires"):
         super().__init__(name, component, target)
+        self.wires_failed = [False, False, False, False, False]
 
     # runs the thread
     def run(self):
@@ -564,14 +616,13 @@ class Wires(PhaseThread):
             elif self._value == self._target:
                 self._defused = True
             else:
-                print("Third case---------")
                 n = 0
                 for wire in self._value:
-                    print(wire)
                     if wire == self._target[n]:
                         None
-                    elif wire == "0":
+                    elif wire == "0" and self.wires_failed[n] == False:
                         self._failed = True
+                        self.wires_failed[n] == True
                     n += 1
             sleep(0.1)
 
