@@ -692,10 +692,9 @@ class Button(PhaseThread):
     # runs the thread
     def run(self):
         self._rgb[0].value = True
-        self.running = True
         next_color_change = time() + self.random_color_change()
 
-        while self._running:
+        while True:
             #Setting the first RGB color
 
             #Updating the current value
