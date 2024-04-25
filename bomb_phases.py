@@ -67,7 +67,7 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
             return
         # Handaling incorrect inputs
         else:
-            main_label.configure(text="Incorect input, try again")
+            main_label.configure(text="Incorrect input, try again")
             return
     #Displaying the decrypted plaintext
     main_label.configure(text="The key is {}".format(plaintext_string))
@@ -105,8 +105,8 @@ class Lcd(Frame):
         self.img_portal = Image.open("visual/portal2.png")
         self.img_portal = self.img_portal.resize((20, 20), Image.Resampling.LANCZOS)
         self.img_portal = ImageTk.PhotoImage(self.img_portal)
-        self._introlabel = Label(self.window, bg= "black", image=self.img_intro)
-        self._secret = Label(self.window, bg= "black", image=self.img_portal)
+        self._introlabel = Label(self.window, bg="black", image=self.img_intro)
+        self._secret = Label(self.window, bg="black", image=self.img_portal)
         self._introlabel.place(relx=0.37, rely=0.30)
         self._secret.place(relx=0, rely=0.95)
         self._intro_text.place(relx=0.18, rely=0.15)
@@ -310,6 +310,7 @@ class Lcd(Frame):
 
     # setup the conclusion GUI (explosion/defusion)
     def conclusion(self, success=False):
+        global strikes_left
         # destroy/clear widgets that are no longer needed
         self._lscroll["text"] = ""
         self._lgeiger.destroy()
@@ -326,6 +327,15 @@ class Lcd(Frame):
 
         # reconfigure the GUI
         # the retry button
+        if strikes_left == 0:
+            self.bad_ending = Image.open("bad_end.avif")
+            self.bad_ending = self.bad_ending.resize((200, 200), Image.Resampling.LANCZOS)
+            self.bad_ending = ImageTk.PhotoImage(self.bad_ending)
+        else:
+            self.good_ending = Image.open("good_end.avif")
+            self.good_ending = self.good_ending.resize((200, 200), Image.Resampling.LANCZOS)
+            self.good_ending = ImageTk.PhotoImage(self.bad_ending)
+
         self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry",
                                       anchor=CENTER, command=self.retry)
         self._bretry.grid(row=1, column=0, pady=40)
