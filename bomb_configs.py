@@ -9,11 +9,6 @@ DEBUG = True         # debug mode?
 RPi = False           # is this running on the RPi?
 ANIMATE = False      # animate the LCD text?
 SHOW_BUTTONS = True  # show the Pause and Quit buttons on the main LCD GUI?
-DEBUG = False        # debug mode?
-RPi = True           # is this running on the RPi?
-ANIMATE = False       # animate the LCD text?
-SHOW_BUTTONS = True # show the Pause and Quit buttons on the main LCD GUI?
-
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"
 NUM_PHASES = 5       # the total number of initial active bomb phases

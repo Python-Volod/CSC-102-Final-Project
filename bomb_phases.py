@@ -309,8 +309,7 @@ class Lcd(Frame):
             self._timer.pause()
 
     # setup the conclusion GUI (explosion/defusion)
-    def conclusion(self, success=False):
-        global strikes_left
+    def conclusion(self, success):
         # destroy/clear widgets that are no longer needed
         self._lscroll["text"] = ""
         self._lgeiger.destroy()
@@ -327,7 +326,7 @@ class Lcd(Frame):
 
         # reconfigure the GUI
         # the retry button
-        if strikes_left == 0:
+        if success:
             bad_ending_image = Image.open("bad_end.png")
             bad_ending_image = bad_ending_image.resize((200, 200), Image.Resampling.LANCZOS)
             self.bad_ending = ImageTk.PhotoImage(bad_ending_image)
