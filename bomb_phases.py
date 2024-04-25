@@ -328,13 +328,19 @@ class Lcd(Frame):
         # reconfigure the GUI
         # the retry button
         if strikes_left == 0:
-            self.bad_ending = Image.open("bad_end.avif")
-            self.bad_ending = self.bad_ending.resize((200, 200), Image.Resampling.LANCZOS)
-            self.bad_ending = ImageTk.PhotoImage(self.bad_ending)
+            bad_ending_image = Image.open("bad_end.png")
+            bad_ending_image = bad_ending_image.resize((200, 200), Image.Resampling.LANCZOS)
+            self.bad_ending = ImageTk.PhotoImage(bad_ending_image)
+            # Place the ending image
+            self.end_image_label = Label(self.main_tab, image=self.bad_ending, bg="black")
+            self.end_image_label.grid(row=0, column=0, columnspan=3)
         else:
-            self.good_ending = Image.open("good_end.avif")
-            self.good_ending = self.good_ending.resize((200, 200), Image.Resampling.LANCZOS)
-            self.good_ending = ImageTk.PhotoImage(self.bad_ending)
+            good_ending_image = Image.open("good_end.avif")
+            good_ending_image = good_ending_image.resize((200, 200), Image.Resampling.LANCZOS)
+            self.good_ending = ImageTk.PhotoImage(good_ending_image)
+            # Place the ending image
+            self.end_image_label = Label(self.main_tab, image=self.good_ending, bg="black")
+            self.end_image_label.grid(row=0, column=0, columnspan=3)
 
         self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry",
                                       anchor=CENTER, command=self.retry)
