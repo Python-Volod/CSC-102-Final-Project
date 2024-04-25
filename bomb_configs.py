@@ -9,6 +9,11 @@ DEBUG = True         # debug mode?
 RPi = False           # is this running on the RPi?
 ANIMATE = False      # animate the LCD text?
 SHOW_BUTTONS = True  # show the Pause and Quit buttons on the main LCD GUI?
+DEBUG = False        # debug mode?
+RPi = True           # is this running on the RPi?
+ANIMATE = False       # animate the LCD text?
+SHOW_BUTTONS = True # show the Pause and Quit buttons on the main LCD GUI?
+
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
 NUM_STRIKES = 5      # the total strikes allowed before the bomb "explodes"
 NUM_PHASES = 5       # the total number of initial active bomb phases
@@ -97,6 +102,7 @@ if (RPi):
 #  the first three letters should be distinct and in the range 0..4 such that A=0, B=1, etc, to match the jumper wires
 #  the last letter should be outside of the range
 def genSerial():
+    print("Huh?")
     # set the digits (used in the toggle switches phase)
     serial_digits = []
     toggle_value = randint(1, 15) # random toggle value between 1 and 15
@@ -123,7 +129,7 @@ def genSerial():
     shuffle(serial) # shuffle values in random order
 
     serial = "".join(serial) # make string
-    return serial, str(toggle_value), jumper_value, str(toggle2_value) # return the values
+    return serial, toggle_value, jumper_value, toggle2_value # return the values
 
 # generates the keypad combination by encoding a random keyword using rsa
 def genKeypadCombination():    
@@ -205,8 +211,8 @@ elif (button_color == "B"):
 
 if (DEBUG): # check if in debug mode
     print(f"Serial number: {serial}")
-    print(f"Toggles target: {bin(int(toggles_target))[2:].zfill(4)}/{toggles_target}") # print binary representation of toggles_target, without it beginning with "0b"
-    print(f"Toggles2 target: {bin(int(toggles2_target))[2:].zfill(4)}/{toggles2_target}") # .zfill(4) to ensure 4 digits /{target as a decimal}
+    print(f"Toggles target: {bin(toggles_target)[2:].zfill(4)}/{toggles_target}") # print binary representation of toggles_target, without it beginning with "0b"
+    print(f"Toggles2 target: {bin(toggles2_target)[2:].zfill(4)}/{toggles2_target}") # .zfill(4) to ensure 4 digits /{target as a decimal}
     print(f"Wires target: {bin(int(wires_target))[2:].zfill(5)}/{wires_target}")
     print(f"Keypad target: {keyword}, encoded as {encoded_keyword} with p:q - {p}:{q} and e : {e}")
     print(f"Button target: {button_target}")

@@ -655,76 +655,46 @@ class Button(PhaseThread):
         # we need the pushbutton's RGB pins to set its color
         self._rgb = component_rgb
         # the pushbutton's randomly selected LED color
-        self._color = color
+        self.colors = ["R", "G"]
+        self._color = random.choice(self.colors)
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
 
     #Updating RGB values based on their color
     def update_color(self, color):
-        #Determining the value of the Red LED
-        if color == "R":
-            self._rgb[0].value = True
-        else:
-            self._rgb[0].value = False
-
-        #Determining the value of the Green LED
-        if color == "G":
-            self._rgb[1].value = True
-        else:
-            self._rgb[1].value = False
-
-        #Determining the value of the Blue LED
-        if color == "B":
-            self._rgb[2].value = True
-        else:
-            self._rgb[2].value = False
+        self._rgb[0].value = color == "R"
+        self._rgb[1].value = color == "G"
 
     # Function to pick new color
-    def pick_new_color(self):
-        # Picking a random color different from the current color
-        colors = ["R", "G", "B"]
-        # Removing the current color from the list of possible colors
-        #colors.remove(self._current_color)
-        # Picking a random color from the list of possible colors
-        new_color = random.choice(colors)
-        return new_color
-
+    #Not Random Color
+    def color_change(self):
+        current_index = self.colors.index(self._color)
+        #switching to the other color
+        new_index = 1 - current_index
+        self._color = self.colors[new_index]
+        self.update_color(self._color)
+    
     #Function to generate a random color change
     def random_color_change(self):
         return randint(1, 40)
 
-    def button_color_is_B (self):
-        if self._color == "B":
-            return True
-        else:
-            return False
-
     # runs the thread
     def run(self):
         self._rgb[0].value = True
+        self._running = True
         next_color_change = time() + self.random_color_change()
 
-        while True:
-            #Setting the first RGB color
-
-            #Updating the current value
+        while (self._running):
             self._value = self._component.value
             if self._value:
-                self._pressed = True
+                if not self._pressed:
+                    self.color_change()
+                    self._pressed = True
             else:
-                #When Button is pressed colors change
-                if self._pressed:
-                    self._color = self.pick_new_color()
-                    self.update_color(self._color)
-                    if not self._target or self._target in self._timer._sec:
-                        self._defused = True
-                    else:
-                        self._failed = True
-                    self._pressed = False
-
+                self._pressed = False
+                
             if time() >= next_color_change:
-                self._color = self.pick_new_color()
-                self.update_color(self._color)
+                self.color_change()
                 next_color_change = time() + self.random_color_change()
             sleep(0.1)
 
