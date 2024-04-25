@@ -652,33 +652,17 @@ class Button(PhaseThread):
 
     #Updating RGB values based on their color
     def update_color(self, color):
-        #Determining the value of the Red LED
-        if color == "R":
-            self._rgb[0].value = True
-        else:
-            self._rgb[0].value = False
-        
-        #Determining the value of the Green LED
-        if color == "G":
-            self._rgb[1].value = True
-        else:
-            self._rgb[1].value = False
+        self._rgb[0].value = color == "R"
+        self._rgb[1].value = color == "G"
 
-        #Determining the value of the Blue LED
-        if color == "B":
-            self._rgb[2].value = True
-        else:
-            self._rgb[2].value = False
-        
     # Function to pick new color
-    def pick_new_color(self):
-        # Picking a random color different from the current color
-        colors = ["R", "G", "B"]
-        # Removing the current color from the list of possible colors
-        #colors.remove(self._current_color)
-        # Picking a random color from the list of possible colors
-        new_color = random.choice(colors)
-        return new_color
+    #Not Random Color
+    def color_change(self):
+        current_index = self.colors.index(self._color)
+        #switching to the other color
+        new_index = 1 - current_index
+        self._color = self.colors[new_index]
+        self.update_color(self._color)
     
     #Function to generate a random color change
     def random_color_change(self):
@@ -695,13 +679,13 @@ class Button(PhaseThread):
             if self._value:
                 if not self._pressed:
                     self.color_change()
-                    self._pressed = True 
+                    self._pressed = True
             else:
-                self._pressed = False 
-
+                self._pressed = False
+                
             if time() >= next_color_change:
                 self.color_change()
-                next_color_change = time() + self.random_color_change
+                next_color_change = time() + self.random_color_change()
             sleep(0.1)
 
     # returns the pushbutton's state as a string
