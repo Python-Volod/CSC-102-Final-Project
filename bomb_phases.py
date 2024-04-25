@@ -50,7 +50,7 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
     except:
         main_label.configure(text='Error occurred. Try again.')
         return
-    
+
     # Convert the plaintext to a string
     plaintext_string = ""
     while plaintext:
@@ -119,7 +119,7 @@ class Lcd(Frame):
 
         # Display the GUI
         self.update()
-        
+
         # create two main tabs of GUI, one for general information and the other is for RSA decryption
         self.tabs = tkinter.ttk.Notebook(self.window)
         self.main_tab = tkinter.Frame(self.tabs, bg="black", height=self.window.winfo_screenheight())
@@ -133,7 +133,7 @@ class Lcd(Frame):
         self.main_tab.columnconfigure(2, weight=1)
 
 
-        
+
         # the scrolling informative "boot" text
         self._lscroll = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="", justify=LEFT)
         self._lscroll.grid(row=0, column=0, columnspan=3, sticky=W)
@@ -161,7 +161,7 @@ class Lcd(Frame):
         # Label to display the timer 
         self._ltimer = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Time left: ")
         self._ltimer.grid(row=1, column=0, columnspan=3, sticky=W)
-        
+
         # Label to display the radiation emmited
         self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Radiation exposure (in Grays): \n")
         self._lgeiger.grid(row=2, column=0, columnspan=3, sticky=W)
@@ -169,15 +169,15 @@ class Lcd(Frame):
         # Label for the keypad phase 
         self._lkeypad = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Keypad phase: ")
         self._lkeypad.grid(row=3, column=0, columnspan=3, sticky=W)
-        
+
         # Label for wires phase
         self._lwires = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Wires phase: ")
         self._lwires.grid(row=4, column=0, columnspan=3, sticky=W)
-        
+
         # Label for the Button phase
         self._lbutton = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Button color: ")
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
-       
+
         # Label for toggle switches phase
         self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Toggles phase: ")
         self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
@@ -198,7 +198,7 @@ class Lcd(Frame):
             self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit",
                                          anchor=CENTER, command=self.quit)
             self._bquit.grid(row=6, column=2, pady=40)
-        
+
         # Setup the RSA tab created with help of Chat GPT
         # Main function for the RSA that decrypts using user entered values 
         # Feedback for the user
@@ -214,7 +214,7 @@ class Lcd(Frame):
         self.right_image_label = Label(self.rsa_tab, image=self.img1, height=150, width=150, bg="black")
         self.left_image_label.place(relx=0.05, rely=0.5)
         self.right_image_label.place(relx=0.75, rely=0.5)
-        
+
         # Fields for user to enter values and button to decode using the given information
         self.text_c = StringVar()
         self.text_c.set('Enter the C-value')
@@ -420,7 +420,7 @@ class Timer(PhaseThread):
         self._paused = not self._paused
         # blink the 7-segment display when paused
         self._component.blink_rate = (2 if self._paused else 0)
-    
+
     def return_radiation(self):
         return f"{self.radiation}"
 
@@ -449,7 +449,7 @@ class M_Player(PhaseThread):
         if self._running == True: # this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
             self.run()
-    
+
     def play(self, song):
         sound = AudioSegment.from_file("sounds/" + song)
         #play(sound)
@@ -607,7 +607,7 @@ class Wires(PhaseThread):
             self._value = ""
             # get the wire's state
             for wire in self._component:
-                if wire.value == True:
+                if wire.value:
                     self._value += "1"
                 else:
                     self._value += "0"
@@ -620,7 +620,7 @@ class Wires(PhaseThread):
                 for wire in self._value:
                     if wire == self._target[n]:
                         None
-                    elif ((wire == "0") and (self.wires_failed[n] == False)) == True:
+                    elif ((wire == "0") and (self.wires_failed[n] == False)):
                         self._failed = True
                         self.wires_failed[n] = True
                     n += 1
@@ -656,7 +656,7 @@ class Button(PhaseThread):
             self._rgb[0].value = True
         else:
             self._rgb[0].value = False
-        
+
         #Determining the value of the Green LED
         if color == "G":
             self._rgb[1].value = True
@@ -668,7 +668,7 @@ class Button(PhaseThread):
             self._rgb[2].value = True
         else:
             self._rgb[2].value = False
-        
+
     # Function to pick new color
     def pick_new_color(self):
         # Picking a random color different from the current color
@@ -678,7 +678,7 @@ class Button(PhaseThread):
         # Picking a random color from the list of possible colors
         new_color = random.choice(colors)
         return new_color
-    
+
     #Function to generate a random color change
     def random_color_change(self):
         return randint(1, 40)
@@ -739,11 +739,10 @@ class Toggles(PhaseThread):
         print("Toggle target1:", self._target)
         print("Toggle target:", self._target2)
         self.button = button
-        self.toggles_failed = [False, False, False, False, False]
+        self.toggles_failed = [False, False, False, False]
 
     # runs the thread
     def run(self):
-        print("RUn")
         self._running = True
         self._value = ""
         part2 = False
@@ -752,53 +751,43 @@ class Toggles(PhaseThread):
             for toggle in self._component:
                 if toggle.value: # if toggle component is on, value adds 1
                     self._value += "1"
-                else: 
-                    self._value += "0" # add a "0" if toggle component is off
+                else:
+                    self._value += "0"  # add a "0" if toggle component is off
             # the combination is correct -> phase defused
             if not part2:
-                if (self._value == self._target) and self.button.button_color_is_B() == False:  # correct combination, button color not blue
-
-                    #self._defused = True # **** this is to defuse the entire thing
+                if (self._value == self._target):  # correct combination, button color not blue
                     part2 = True
-                    self.toggles_failed = [False, False, False, False, False]
-                    print("DONE")
-                elif self._value == '0000' or self._value == "1111": # ignore toggle values if all off
+                    self.toggles_failed = [False, False, False, False]
+                elif self._value == '0000':  # ignore toggle values if all off
                     sleep(0.1)
                 else:
-                    if self.button.button_color_is_B() == True:
-                        self._failed = True
-                    else:
-                        n = 0
-                        for toggle in self._value:
-                            if toggle == self._target[n]:
-                                None
-                            elif ((toggle == "0") and (self.toggles_failed[n] == False)) == True:
-                                self._failed = True
-                                self.toggles_failed[n] = True
-                            n += 1
-                            
+                    n = 0
+                    for toggle in self._value:
+                        if toggle == self._target[n]:
+                            None
+                        elif (toggle == "0") and (self.toggles_failed[n] == False):
+                            self._failed = True
+                            self.toggles_failed[n] = True
+                        n += 1
 
             if part2:
-                if (
-                        self._value == self._target2) and (not self.button.button_color_is_B()):  # correct combination, button color not blue
+                if (self._value == self._target2):  # correct combination, button color not blue
+                    self._defused = True  # **** this is to defuse the entire toggles phase
 
-                    self._defused = True # **** this is to defuse the entire thing
-                elif self._value == self._target or self._value == '0000' or self._value == "1111":  # ignore toggle values if all off
+                elif self._value == self._target or self._value == '0000':  # ignore toggle values if all off
                     sleep(0.1)
-                else:
-                    if self.button.button_color_is_B() == True:
-                        self._failed = True
-                    else:
-                        n = 0
-                        for toggle in self._value:
-                            if toggle == self._target2[n]:
-                                None
-                            elif ((toggle == "0") and (self.toggles_failed[n] == False)) == True:
-                                self._failed = True
-                                self.toggles_failed[n] = True
-                            n += 1
 
-        sleep(0.1)
+                else:
+                    n = 0
+                    for toggle in self._value:
+                        if toggle == self._target2[n]:
+                            None
+                        elif (toggle == "0") and (self.toggles_failed[n] == False):
+                            self._failed = True
+                            self.toggles_failed[n] = True
+                        n += 1
+
+            sleep(1)
 
     # returns the toggle switches state as a string
     def __str__(self):
