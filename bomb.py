@@ -62,10 +62,10 @@ def setup_phases():
     # start the phase threads
     timer.start()
     keypad.start()
-    wires.start()
+    wires.start()	 
     button.start()
     toggles.start()
-    #m_player.start()
+    m_player.start()
 
 
 # checks the phase threads

@@ -462,13 +462,13 @@ class M_Player(PhaseThread):
         })
         sound_with_adjusted_speed = sound_with_adjusted_speed[:44000]
         play(sound_with_adjusted_speed)
-        if self._running: # this causes error that doesn't affect anything
+        if self._running:  #this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
             self.run()
 
     def play(self, song):
         sound = AudioSegment.from_file("sounds/" + song)
-        #play(sound)
+        play(sound)
 
 
 
@@ -721,10 +721,11 @@ class Button(PhaseThread):
 
 
 # the toggle switches phase
-class Toggles(PhaseThread):
+class Toggles(PhaseThread): #s.zfill(4)[:4]
     def __init__(self, component, target, target2, name="Toggles"):
-        super().__init__(name, component, str(bin(target))[-4:].replace("b","0"), str(bin(target2))[-4:].replace("b", "0"))
+        super().__init__(name, component, str(bin(target))[-4:].replace("b", "0"), str(bin(target2))[-4:].replace("b", "0"))
         # self.button = button
+        # old target = str(bin(target))[-4:].replace("b","0")
         self.toggles_failed = [False, False, False, False]
 
     # runs the thread
@@ -739,15 +740,14 @@ class Toggles(PhaseThread):
                     self._value += "1"
                 else:
                     self._value += "0"  # add a "0" if toggle component is off
-
             # the combination is correct -> phase defused
             if not part2:
-                if (self._value == self._target):  # correct combination, button color not blue
+                if (self._value == self._target):  # correct combination
                     part2 = True
                     self.toggles_failed = [False, False, False, False]
                 elif self._value == '0000':  # ignore toggle values if all off
                     sleep(0.1)
-                else:
+                else: 
                     n = 0
                     for toggle in self._value:
                         if toggle == self._target[n]:
@@ -755,10 +755,11 @@ class Toggles(PhaseThread):
                         elif (toggle == "0") and (self.toggles_failed[n] == False):
                             self._failed = True
                             self.toggles_failed[n] = True
-                        n += 1
+                        n+=1
+                        
 
             if part2:
-                if (self._value == self._target2):  # correct combination, button color not blue
+                if (self._value == self._target2):  # correct combination
                     self._defused = True  # **** this is to defuse the entire toggles phase
 
                 elif self._value == self._target or self._value == '0000':  # ignore toggle values if all off
