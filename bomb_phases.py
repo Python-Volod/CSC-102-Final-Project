@@ -309,7 +309,7 @@ class Lcd(Frame):
             self._timer.pause()
 
     # setup the conclusion GUI (explosion/defusion)
-    def conclusion(self, success):
+    def conclusion(self, success=False):
         # destroy/clear widgets that are no longer needed
         self._lscroll["text"] = ""
         self._lgeiger.destroy()
@@ -327,19 +327,20 @@ class Lcd(Frame):
         # reconfigure the GUI
         # the retry button
         if success:
-            bad_ending_image = Image.open("bad_end.png")
-            bad_ending_image = bad_ending_image.resize((200, 200), Image.Resampling.LANCZOS)
-            self.bad_ending = ImageTk.PhotoImage(bad_ending_image)
-            # Place the ending image
-            self.end_image_label = Label(self.main_tab, image=self.bad_ending, bg="black")
-            self.end_image_label.grid(row=0, column=0, columnspan=3)
-        else:
-            good_ending_image = Image.open("good_end.avif")
+            good_ending_image = Image.open("visual/good_end.png")
             good_ending_image = good_ending_image.resize((200, 200), Image.Resampling.LANCZOS)
             self.good_ending = ImageTk.PhotoImage(good_ending_image)
             # Place the ending image
             self.end_image_label = Label(self.main_tab, image=self.good_ending, bg="black")
-            self.end_image_label.grid(row=0, column=0, columnspan=3)
+            self.end_image_label.grid(row=1, column=0, columnspan=3)
+        else:
+            bad_ending_image = Image.open("visual/bad_end.png")
+            bad_ending_image = bad_ending_image.resize((400, 400), Image.Resampling.LANCZOS)
+            self.bad_ending = ImageTk.PhotoImage(bad_ending_image)
+            # Place the ending image
+            self.end_image_label = Label(self.main_tab, image=self.bad_ending, bg="black")
+            self.end_image_label.grid(row=1, column=0, columnspan=3)
+
 
         self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry",
                                       anchor=CENTER, command=self.retry)
@@ -664,6 +665,8 @@ class Button(PhaseThread):
         self._color = random.choice(self.colors)
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
+        
+        self.update_color(self._color)
 
     #Updating RGB values based on their color
     def update_color(self, color):
