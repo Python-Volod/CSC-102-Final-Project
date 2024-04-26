@@ -428,7 +428,7 @@ class Timer(PhaseThread):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
         self._exposure += 1
-        self.radiation = f"{(self._exposure *12)/2000: .2f}".zfill(2)
+        self.radiation = f"{(self._exposure*40)/2000: .2f}".zfill(2)
 
     # pauses and unpauses the timer
     def pause(self):
