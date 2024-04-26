@@ -1,6 +1,6 @@
 # from tkinter import * 
 # from PIL import ImageTk, Image
-
+import time
 # class Lcd(Frame):
 
 #     def __init__(self, window, m_player = 1):
@@ -29,4 +29,4 @@
 # root.mainloop()
 
 
-print("1101"[-4:].replace("b", "0"))
+print(time.time())

@@ -468,7 +468,7 @@ class M_Player(PhaseThread):
 
     def play(self, song):
         sound = AudioSegment.from_file("sounds/" + song)
-        play(sound)
+        #play(sound)
 
 
 
@@ -666,25 +666,20 @@ class Button(PhaseThread):
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
         #Time to check when the button was turned red 
+        self.red_timer = None
+        self.color_change()
         
-        #TODO TEST 
-        #self.red_timer = None
-        
-        self.update_color(self._color)
-
-    #Updating RGB values based on their color
-    def update_color(self, color):
-        self._rgb[0].value = color == "R"
-        self._rgb[1].value = color == "G"
-
     # Function to pick new color
     #Not Random Color
     def color_change(self):
-        current_index = self.colors.index(self._color)
-        #switching to the other color
-        new_index = 1 - current_index
-        self._color = self.colors[new_index]
-        self.update_color(self._color)
+        if self._color == "R":
+            self._color = "G"
+            self._rgb[0].value = True
+            self._rgb[1].value = False
+        else:
+            self._color = "R"
+            self._rgb[0].value = False
+            self._rgb[1].value = True
     
     #Function to generate a random color change
     def random_color_change(self):
@@ -692,14 +687,11 @@ class Button(PhaseThread):
 
     # runs the thread
     def run(self):
-        self._rgb[0].value = True
         self._running = True
         next_color_change = time() + self.random_color_change()
 
         while (self._running):
-
-            #TODO #TEST
-            #current_time = time()
+            current_time = time()
             self._value = self._component.value
 
             if self._value:
@@ -713,17 +705,14 @@ class Button(PhaseThread):
                 self.color_change()
                 next_color_change = time() + self.random_color_change()
             sleep(0.1)
+            if self._color == "R":
+                if self.red_timer is None:
+                    self.red_timer = time()
+                elif (current_time - self.red_timer) >= 5:
+                    self._failed = True
+                    self.red_timer = None
 
-            #TODO #TEST
-            # if self._color == "R":
-            #     if self.red_timer is None:
-            #         self.red_timer = time()
-            # else:
-            #     if self.red_timer and (current_time - self.red_timer) >= 5:
-            #         self._failed = True
-            #         self.red_timer = None
-
-            # sleep(0.1)
+            sleep(0.1)
 
     # returns the pushbutton's state as a string
     def __str__(self):
@@ -740,11 +729,9 @@ class Button(PhaseThread):
 
 
 # the toggle switches phase
-class Toggles(PhaseThread): #s.zfill(4)[:4]
+class Toggles(PhaseThread): 
     def __init__(self, component, target, target2, name="Toggles"):
         super().__init__(name, component, str(bin(target))[-4:].replace("b", "0"), str(bin(target2))[-4:].replace("b", "0"))
-        # self.button = button
-        # old target = str(bin(target))[-4:].replace("b","0")
         self.toggles_failed = [False, False, False, False]
 
     # runs the thread
@@ -795,7 +782,6 @@ class Toggles(PhaseThread): #s.zfill(4)[:4]
                         n += 1
 
             sleep(1)
-
     # returns the toggle switches state as a string
     def __str__(self):
         if (self._defused): # display if toggle phase is defused or armed
