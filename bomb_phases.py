@@ -684,7 +684,7 @@ class Button(PhaseThread):
     
     #Function to generate a random color change
     def random_color_change(self):
-        return randint(1, 40)
+        return randint(1, 20)
 
     # runs the thread
     def run(self):
