@@ -666,9 +666,8 @@ class Button(PhaseThread):
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
         #Time to check when the button was turned red 
-        
-        #TODO TEST 
-        #self.red_timer = None
+
+        self.red_timer = None
         
         self.update_color(self._color)
 
@@ -697,9 +696,7 @@ class Button(PhaseThread):
         next_color_change = time() + self.random_color_change()
 
         while (self._running):
-
-            #TODO #TEST
-            #current_time = time()
+            current_time = time()
             self._value = self._component.value
 
             if self._value:
@@ -714,16 +711,15 @@ class Button(PhaseThread):
                 next_color_change = time() + self.random_color_change()
             sleep(0.1)
 
-            #TODO #TEST
-            # if self._color == "R":
-            #     if self.red_timer is None:
-            #         self.red_timer = time()
-            # else:
-            #     if self.red_timer and (current_time - self.red_timer) >= 5:
-            #         self._failed = True
-            #         self.red_timer = None
+            if self._color == "R":
+                if self.red_timer is None:
+                    self.red_timer = time()
+            else:
+                if self.red_timer and ((current_time - self.red_timer) >= 5):
+                    self._failed = True
+                    self.red_timer = None
 
-            # sleep(0.1)
+             sleep(0.1)
 
     # returns the pushbutton's state as a string
     def __str__(self):
