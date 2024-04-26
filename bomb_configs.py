@@ -6,7 +6,7 @@
 
 # constants
 DEBUG = True         # debug mode?
-RPi = True           # is this running on the RPi?
+RPi = False           # is this running on the RPi?
 ANIMATE = False      # animate the LCD text?
 SHOW_BUTTONS = True  # show the Pause and Quit buttons on the main LCD GUI?
 COUNTDOWN = 480      # the initial bomb countdown value (seconds)
@@ -97,7 +97,6 @@ if (RPi):
 #  the first three letters should be distinct and in the range 0..4 such that A=0, B=1, etc, to match the jumper wires
 #  the last letter should be outside of the range
 def genSerial():
-    print("Huh?")
     # set the digits (used in the toggle switches phase)
     serial_digits = []
     toggle_value = randint(1, 15) # random toggle value between 1 and 15
