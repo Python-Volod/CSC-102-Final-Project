@@ -721,11 +721,10 @@ class Button(PhaseThread):
 
 
 # the toggle switches phase
-class Toggles(PhaseThread): #s.zfill(4)[:4]
+class Toggles(PhaseThread):
     def __init__(self, component, target, target2, name="Toggles"):
-        super().__init__(name, component, (bin(int(target)).zfill(4)[-4:].replace("b", "0"), (bin(int(target2)).zfill(4)[-4:].replace("b", "0"))))
+        super().__init__(name, component, str(bin(target))[-4:].replace("b","0"), str(bin(target2))[-4:].replace("b", "0"))
         # self.button = button
-        # old target = str(bin(target))[-4:].replace("b","0")
         self.toggles_failed = [False, False, False, False]
 
     # runs the thread
@@ -740,6 +739,7 @@ class Toggles(PhaseThread): #s.zfill(4)[:4]
                     self._value += "1"
                 else:
                     self._value += "0"  # add a "0" if toggle component is off
+
             # the combination is correct -> phase defused
             if not part2:
                 if (self._value == self._target):  # correct combination, button color not blue
@@ -751,7 +751,7 @@ class Toggles(PhaseThread): #s.zfill(4)[:4]
                     n = 0
                     for toggle in self._value:
                         if toggle == self._target[n]:
-                            None
+                            continue
                         elif (toggle == "0") and (self.toggles_failed[n] == False):
                             self._failed = True
                             self.toggles_failed[n] = True
