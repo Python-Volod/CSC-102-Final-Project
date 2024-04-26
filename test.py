@@ -29,4 +29,4 @@ import time
 # root.mainloop()
 
 
-print(time.time())
+print(type(time.time()))

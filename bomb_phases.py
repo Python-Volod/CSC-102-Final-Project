@@ -673,10 +673,14 @@ class Button(PhaseThread):
     #Not Random Color
     def color_change(self):
         if self._color == "R":
+            if self.red_timer != None:
+                self.red_timer = None
             self._color = "G"
             self._rgb[0].value = True
             self._rgb[1].value = False
         else:
+            if self.red_timer is None:
+                self.red_timer = time()
             self._color = "R"
             self._rgb[0].value = False
             self._rgb[1].value = True
@@ -691,7 +695,7 @@ class Button(PhaseThread):
         next_color_change = time() + self.random_color_change()
 
         while (self._running):
-            current_time = time()
+            self.current_time = time()
             self._value = self._component.value
 
             if self._value:
@@ -704,13 +708,14 @@ class Button(PhaseThread):
             if time() >= next_color_change:
                 self.color_change()
                 next_color_change = time() + self.random_color_change()
-            sleep(0.1)
+            
             if self._color == "R":
-                if self.red_timer is None:
-                    self.red_timer = time()
-                elif (current_time - self.red_timer) >= 5:
-                    self._failed = True
-                    self.red_timer = None
+                if self.red_timer != None:
+                    if (self.current_time - self.red_timer) >= 5:
+                        self.red_timer = None
+                        self._failed = True
+            sleep(0.1)
+                        
 
             sleep(0.1)
 
