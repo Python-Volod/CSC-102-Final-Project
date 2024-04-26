@@ -719,7 +719,8 @@ class Button(PhaseThread):
                     self._failed = True
                     self.red_timer = None
 
-             sleep(0.1)
+
+            sleep(0.1)
 
     # returns the pushbutton's state as a string
     def __str__(self):
