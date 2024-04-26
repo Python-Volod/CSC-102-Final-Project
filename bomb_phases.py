@@ -462,7 +462,7 @@ class M_Player(PhaseThread):
         })
         sound_with_adjusted_speed = sound_with_adjusted_speed[:44000]
         play(sound_with_adjusted_speed)
-        if self._running == True: # this causes error that doesn't affect anything
+        if self._running: # this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
             self.run()
 
