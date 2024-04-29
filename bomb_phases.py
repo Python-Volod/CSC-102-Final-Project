@@ -20,7 +20,6 @@ import sys
 from random import randint
 
 
-
 #########
 # functions
 #########
@@ -57,7 +56,7 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
         plaintext_string += chr(plaintext & 0xFF)
         plaintext >>= 8
 
-    #Reversing the constructed string to get the original string
+    # Reversing the constructed string to get the original string
     plaintext_string = plaintext_string[::-1]
 
     # Check if the plaintext is not predefined words list
@@ -69,16 +68,91 @@ def decrypt_rsa(c_entry, p_entry, q_entry, e_entry, main_label):
         else:
             main_label.configure(text="Incorrect input, try again")
             return
-    #Displaying the decrypted plaintext
+    # Displaying the decrypted plaintext
     main_label.configure(text="The key is {}".format(plaintext_string))
 
 
 #########
 # classes
 #########
-# the LCD display GUI
-class Lcd(Frame):
 
+# template (superclass) for various bomb components/phases
+class PhaseThread(Thread):
+    def __init__(self, name, component=None, target=None, target2=None):
+        super().__init__(name=name, daemon=True)
+        # phases have an electronic component (which usually represents the GPIO pins)
+        self._component = component
+        # phases have a target value (e.g., a specific combination on the keypad, the proper jumper wires to "cut", etc)
+        self._target = target
+        # phases can be successfully defused
+        self._defused = False
+        # phases can be failed (which result in a strike)
+        self._failed = False
+        # phases have a value (e.g., a pushbutton can be True/Pressed or False/Released, several jumper wires can be "cut"/False, etc)
+        self._value = None
+        # phase threads are either running or not
+        self._running = False
+
+        self._target2 = target2  # for toggles phase
+
+
+# the timer phase
+class Timer(PhaseThread):
+    def __init__(self, component, initial_value, name="Timer"):
+        super().__init__(name, component)
+        # the default value is the specified initial value
+        self._value = initial_value
+        # is the timer paused?
+        self._paused = False
+        # initialize the timer's minutes/seconds representation
+        self._min = ""
+        self._sec = ""
+        self.radiation = ""
+        # by default, each tick is 1 second
+        self._interval = 1
+        self._exposure = 0
+
+    # runs the thread
+    def run(self):
+        self._running = True
+        while (self._running):
+            if (not self._paused):
+                # update the timer and display its value on the 7-segment display
+                self._update()
+                self._component.print(str(self))
+                # wait 1s (default) and continue
+                sleep(self._interval)
+                # the timer has expired -> phase failed (explode)
+                if (self._value == 0):
+                    self._running = False
+                self._value -= 1
+            else:
+                sleep(0.1)
+
+    # updates the timer (only internally called)
+    def _update(self):
+        self._min = f"{self._value // 60}".zfill(2)
+        self._sec = f"{self._value % 60}".zfill(2)
+        self._exposure += 1
+        self.radiation = f"{(self._exposure * 40) / 2000: .2f}".zfill(2)
+
+    # pauses and unpauses the timer
+    def pause(self):
+        # toggle the paused state
+        self._paused = not self._paused
+        # blink the 7-segment display when paused
+        self._component.blink_rate = (2 if self._paused else 0)
+
+    def return_radiation(self):
+        return f"{self.radiation}"
+
+    # returns the timer as a string (mm:ss)
+    def __str__(self):
+        return f"{self._min}:{self._sec}"
+
+
+# the LCD display GUI
+class Lcd(Frame, Timer):
     def __init__(self, window, m_player):
         super().__init__(window, bg="black")
         # make the GUI fullscreen
@@ -89,6 +163,7 @@ class Lcd(Frame):
         # we need to know about the pushbutton to turn off its LED when the program exits
         self._button = None
         self.m_player = m_player
+        self._radfacts = None
         # Setup the boot
         self.setupBoot()
 
@@ -97,8 +172,9 @@ class Lcd(Frame):
         self.window.attributes("-fullscreen", True)
         self.window.update()
         # set column weights
-        self._intro_text = Label(self.window, bg="black", fg="#00ff00", font=("Courier New", 18), text="DEVICE ACTIVATION HAS BEEN INITIATED")
-        #loading screen + loading intro text
+        self._intro_text = Label(self.window, bg="black", fg="#00ff00", font=("Courier New", 18),
+                                 text="DEVICE ACTIVATION HAS BEEN INITIATED")
+        # loading screen + loading intro text
         self.img_intro = Image.open("visual/stalker.gif")
         self.img_intro = self.img_intro.resize((200, 200), Image.Resampling.LANCZOS)
         self.img_intro = ImageTk.PhotoImage(self.img_intro)
@@ -132,8 +208,6 @@ class Lcd(Frame):
         self.main_tab.columnconfigure(1, weight=1)
         self.main_tab.columnconfigure(2, weight=1)
 
-
-
         # the scrolling informative "boot" text
         self._lscroll = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="", justify=LEFT)
         self._lscroll.grid(row=0, column=0, columnspan=3, sticky=W)
@@ -154,19 +228,19 @@ class Lcd(Frame):
         # Schedule destruction of intro labels after sounds have finished playing
         self.destroy_intro_labels()
 
-
     # sets up the LCD GUI
     def setup(self):
         # Setting ut the main tab with different labels
-        # Label to display the timer 
+        # Label to display the timer
         self._ltimer = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Time left: ")
         self._ltimer.grid(row=1, column=0, columnspan=3, sticky=W)
 
         # Label to display the radiation emmited
-        self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Radiation exposure (in Grays): \n")
+        self._lgeiger = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
+                              text="Radiation exposure (in Grays): \n")
         self._lgeiger.grid(row=2, column=0, columnspan=3, sticky=W)
 
-        # Label for the keypad phase 
+        # Label for the keypad phase
         self._lkeypad = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Keypad phase: ")
         self._lkeypad.grid(row=3, column=0, columnspan=3, sticky=W)
 
@@ -179,10 +253,9 @@ class Lcd(Frame):
         self._lbutton.grid(row=5, column=0, columnspan=3, sticky=W)
 
         # Label for toggle switches phase
-        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Toggles phase: ")
+        self._ltoggles = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
+                               text="Toggles phase: ")
         self._ltoggles.grid(row=5, column=0, columnspan=2, sticky=W)
-
-
 
         # Label for the strikes left
         self._lstrikes = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18), text="Strikes left: ")
@@ -200,7 +273,7 @@ class Lcd(Frame):
             self._bquit.grid(row=6, column=2, pady=40)
 
         # Setup the RSA tab created with help of Chat GPT
-        # Main function for the RSA that decrypts using user entered values 
+        # Main function for the RSA that decrypts using user entered values
         # Feedback for the user
         self.main_label = Label(self.rsa_tab, text="Use this in case of accidental activation", fg="#00ff00",
                                 anchor=CENTER, font=("Courier New", 18), bg="black")
@@ -309,7 +382,7 @@ class Lcd(Frame):
             self._timer.pause()
 
     # setup the conclusion GUI (explosion/defusion)
-    def conclusion(self, success=False):
+    def conclusion(self, radiation, success=False):
         # destroy/clear widgets that are no longer needed
         self._lscroll["text"] = ""
         self._lgeiger.destroy()
@@ -324,31 +397,44 @@ class Lcd(Frame):
             self._bpause.destroy()
             self._bquit.destroy()
 
+        self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry",
+                                      anchor=CENTER, command=self.retry)
+        self._bretry.grid(row=0, column=0, pady=40)
+        # the quit button
+        self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit",
+                                     anchor=CENTER, command=self.quit)
+        self._bquit.grid(row=0, column=2, pady=40)
+
         # reconfigure the GUI
         # the retry button
         if success:
             good_ending_image = Image.open("visual/good_end.png")
-            good_ending_image = good_ending_image.resize((200, 200), Image.Resampling.LANCZOS)
+            good_ending_image = good_ending_image.resize((300, 300), Image.Resampling.LANCZOS)
             self.good_ending = ImageTk.PhotoImage(good_ending_image)
             # Place the ending image
             self.end_image_label = Label(self.main_tab, image=self.good_ending, bg="black")
-            self.end_image_label.grid(row=1, column=0, columnspan=3)
+            self.end_image_label.grid(row=0, column=1, rowspan=1)
         else:
             bad_ending_image = Image.open("visual/bad_end.png")
-            bad_ending_image = bad_ending_image.resize((400, 400), Image.Resampling.LANCZOS)
+            bad_ending_image = bad_ending_image.resize((300, 300), Image.Resampling.LANCZOS)
             self.bad_ending = ImageTk.PhotoImage(bad_ending_image)
             # Place the ending image
             self.end_image_label = Label(self.main_tab, image=self.bad_ending, bg="black")
-            self.end_image_label.grid(row=1, column=0, columnspan=3)
+            self.end_image_label.grid(row=0, column=1, rowspan=1)
 
+        if self.radiation <= "3":
+            effects = "Weakness, fatigue, mild blood cell loss, increased risk of cancer"
+            equivalents = "Eating 240 mg of Uranium-238"
+        elif self.radiation <= "6":
+            effects = "Vomiting, anemia, loss of blood cells, seizures, diarrhea, confusion/coma"
+            equivalents = "720 mg of Uranium-238"
+        else:
+            effects = "bleeding, hair loss, skin damage, dehydration, vomiting, bone marrow suppression, death"
+            equivalents = "Being within 300 meters of the Fukushima Daiichi nuclear disaster of 2011"
 
-        self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry",
-                                      anchor=CENTER, command=self.retry)
-        self._bretry.grid(row=1, column=0, pady=40)
-        # the quit button
-        self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit",
-                                     anchor=CENTER, command=self.quit)
-        self._bquit.grid(row=1, column=2, pady=40)
+         self._radfacts = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
+                                text="Radiation Effects: {}\nEquivalent: {}".format(effects, equivalents))
+        self._radfacts.grid(row=1, column=0)
 
     # re-attempts the bomb (after an explosion or a successful defusion)
     def retry(self):
@@ -370,81 +456,6 @@ class Lcd(Frame):
         exit(0)
 
 
-# template (superclass) for various bomb components/phases
-class PhaseThread(Thread):
-    def __init__(self, name, component=None, target=None, target2=None):
-        super().__init__(name=name, daemon=True)
-        # phases have an electronic component (which usually represents the GPIO pins)
-        self._component = component
-        # phases have a target value (e.g., a specific combination on the keypad, the proper jumper wires to "cut", etc)
-        self._target = target
-        # phases can be successfully defused
-        self._defused = False
-        # phases can be failed (which result in a strike)
-        self._failed = False
-        # phases have a value (e.g., a pushbutton can be True/Pressed or False/Released, several jumper wires can be "cut"/False, etc)
-        self._value = None
-        # phase threads are either running or not
-        self._running = False
-
-        self._target2 = target2 # for toggles phase
-
-
-# the timer phase
-class Timer(PhaseThread):
-    def __init__(self, component, initial_value, name="Timer"):
-        super().__init__(name, component)
-        # the default value is the specified initial value
-        self._value = initial_value
-        # is the timer paused?
-        self._paused = False
-        # initialize the timer's minutes/seconds representation
-        self._min = ""
-        self._sec = ""
-        self.radiation = ""
-        # by default, each tick is 1 second
-        self._interval = 1
-        self._exposure = 0
-
-    # runs the thread
-    def run(self):
-        self._running = True
-        while (self._running):
-            if (not self._paused):
-                # update the timer and display its value on the 7-segment display
-                self._update()
-                self._component.print(str(self))
-                # wait 1s (default) and continue
-                sleep(self._interval)
-                # the timer has expired -> phase failed (explode)
-                if (self._value == 0):
-                    self._running = False
-                self._value -= 1
-            else:
-                sleep(0.1)
-
-    # updates the timer (only internally called)
-    def _update(self):
-        self._min = f"{self._value // 60}".zfill(2)
-        self._sec = f"{self._value % 60}".zfill(2)
-        self._exposure += 1
-        self.radiation = f"{(self._exposure*40)/2000: .2f}".zfill(2)
-
-    # pauses and unpauses the timer
-    def pause(self):
-        # toggle the paused state
-        self._paused = not self._paused
-        # blink the 7-segment display when paused
-        self._component.blink_rate = (2 if self._paused else 0)
-
-    def return_radiation(self):
-        return f"{self.radiation}"
-
-    # returns the timer as a string (mm:ss)
-    def __str__(self):
-        return f"{self._min}:{self._sec}"
-
-
 class M_Player(PhaseThread):
     def __init__(self, song, name="M_Player", factor=1):
         super().__init__(name)
@@ -462,14 +473,13 @@ class M_Player(PhaseThread):
         })
         sound_with_adjusted_speed = sound_with_adjusted_speed[:44000]
         play(sound_with_adjusted_speed)
-        if self._running:  #this causes error that doesn't affect anything
+        if self._running:  # this causes error that doesn't affect anything
             self.factor += 50 / COUNTDOWN
             self.run()
 
     def play(self, song):
         sound = AudioSegment.from_file("sounds/" + song)
-        #play(sound)
-
+        # play(sound)
 
 
 # the keypad phase
@@ -665,12 +675,12 @@ class Button(PhaseThread):
         self._color = random.choice(self.colors)
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
-        #Time to check when the button was turned red 
+        # Time to check when the button was turned red
         self.red_timer = None
         self.color_change()
-        
+
     # Function to pick new color
-    #Not Random Color
+    # Not Random Color
     def color_change(self):
         if self._color == "R":
             if self.red_timer != None:
@@ -684,8 +694,8 @@ class Button(PhaseThread):
             self._color = "R"
             self._rgb[0].value = False
             self._rgb[1].value = True
-    
-    #Function to generate a random color change
+
+    # Function to generate a random color change
     def random_color_change(self):
         return randint(1, 20)
 
@@ -704,18 +714,17 @@ class Button(PhaseThread):
                     self._pressed = True
             else:
                 self._pressed = False
-                
+
             if time() >= next_color_change:
                 self.color_change()
                 next_color_change = time() + self.random_color_change()
-            
+
             if self._color == "R":
                 if self.red_timer != None:
                     if (self.current_time - self.red_timer) >= 5:
                         self.red_timer = None
                         self._failed = True
             sleep(0.1)
-                        
 
             sleep(0.1)
 
@@ -730,13 +739,14 @@ class Button(PhaseThread):
                 return "Green"
             elif button_color == "B":
                 return "BLUE"
-            #return str("Pressed" if self._value else "Released")
+            # return str("Pressed" if self._value else "Released")
 
 
 # the toggle switches phase
-class Toggles(PhaseThread): 
+class Toggles(PhaseThread):
     def __init__(self, component, target, target2, name="Toggles"):
-        super().__init__(name, component, str(bin(target))[-4:].replace("b", "0"), str(bin(target2))[-4:].replace("b", "0"))
+        super().__init__(name, component, str(bin(target))[-4:].replace("b", "0"),
+                         str(bin(target2))[-4:].replace("b", "0"))
         self.toggles_failed = [False, False, False, False]
 
     # runs the thread
@@ -745,9 +755,9 @@ class Toggles(PhaseThread):
         self._value = ""
         part2 = False
         while (self._running):
-            self._value = "" # reset value
+            self._value = ""  # reset value
             for toggle in self._component:
-                if toggle.value: # if toggle component is on, value adds 1
+                if toggle.value:  # if toggle component is on, value adds 1
                     self._value += "1"
                 else:
                     self._value += "0"  # add a "0" if toggle component is off
@@ -758,7 +768,7 @@ class Toggles(PhaseThread):
                     self.toggles_failed = [False, False, False, False]
                 elif self._value == '0000':  # ignore toggle values if all off
                     sleep(0.1)
-                else: 
+                else:
                     n = 0
                     for toggle in self._value:
                         if toggle == self._target[n]:
@@ -766,8 +776,7 @@ class Toggles(PhaseThread):
                         elif (toggle == "0") and (self.toggles_failed[n] == False):
                             self._failed = True
                             self.toggles_failed[n] = True
-                        n+=1
-                        
+                        n += 1
 
             if part2:
                 if (self._value == self._target2):  # correct combination
@@ -787,9 +796,10 @@ class Toggles(PhaseThread):
                         n += 1
 
             sleep(1)
+
     # returns the toggle switches state as a string
     def __str__(self):
-        if (self._defused): # display if toggle phase is defused or armed
+        if (self._defused):  # display if toggle phase is defused or armed
             return "DEFUSED"
         else:
             return "ARMED"
