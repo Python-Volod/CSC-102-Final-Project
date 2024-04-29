@@ -164,6 +164,7 @@ class Lcd(Frame, Timer):
         self._timer = None
         # we need to know about the pushbutton to turn off its LED when the program exits
         self._button = None
+        self._radfacts = None
         self.m_player = m_player
         # Setup the boot
         self.setupBoot()
