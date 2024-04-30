@@ -399,11 +399,11 @@ class Lcd(Frame, Timer):
             self._bpause.destroy()
             self._bquit.destroy()
             
-        self._bretry = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Retry",
+        self._bretry = tkinter.Button(self.main_tab, bg="#00ff00", fg="black", font=("Courier New", 18), text="Retry",
                                       anchor=CENTER, command=self.retry)
         self._bretry.grid(row=0, column=0, pady=40)
         # the quit button
-        self._bquit = tkinter.Button(self.main_tab, bg="red", fg="white", font=("Courier New", 18), text="Quit",
+        self._bquit = tkinter.Button(self.main_tab, bg="#00ff00", fg="black", font=("Courier New", 18), text="Quit",
                                      anchor=CENTER, command=self.quit)
         self._bquit.grid(row=0, column=2, pady=40)
         
@@ -413,34 +413,33 @@ class Lcd(Frame, Timer):
         if success:
             good_ending_image = Image.open("visual/good_end.png")
             good_ending_image = good_ending_image.resize((300, 300), Image.Resampling.LANCZOS)
-            self.good_ending = ImageTk.PhotoImage(good_ending_image)
-            # Place the ending image
-            self.end_image_label = Label(self.main_tab, image=self.good_ending, bg="black")
-            self.end_image_label.grid(row=0, column=1, rowspan=1)
+            self.ending_pic = ImageTk.PhotoImage(good_ending_image)
         else:
             bad_ending_image = Image.open("visual/bad_end.png")
             bad_ending_image = bad_ending_image.resize((300, 300), Image.Resampling.LANCZOS)
-            self.bad_ending = ImageTk.PhotoImage(bad_ending_image)
-            # Place the ending image
-            self.end_image_label = Label(self.main_tab, image=self.bad_ending, bg="black")
-            self.end_image_label.grid(row=0, column=1, rowspan=1)
+            self.ending_pic = ImageTk.PhotoImage(bad_ending_image)
+        
+        # Place image
+        self.end_image_label = Label(self.main_tab, image=self.ending_pic, bg="black")
+        self.end_image_label.grid(row=0, column=1, rowspan=1)
         
         radiation = self._timer.radiation
+        print(radiation)
         effects = ""
         equivalents = ""
-        if self.radiation <= "3":
+        if radiation <= "3":
             effects = "Weakness, fatigue, mild blood cell loss, increased risk of cancer"
             equivalents = "Eating 240 mg of Uranium-238"
-        elif self.radiation <= "6":
-            effects = "Vomiting, anemia, loss of blood cells, seizers"
-            equivalents = "720 mg of Uranium-238"
+        elif radiation <= "6":
+            effects = "Vomiting, anemia, loss of blood cells, seizures"
+            equivalents = "Eating 720 mg of Uranium-238"
         else:
             effects = "bleeding, hair loss, skin damage, dehydration, vomiting, bone marrow suppression"
-            equivalents = "Within 300 meters of the Fukushima Daiichi nuclear disaster of 2011"
+            equivalents = "Being wthin 300 meters of the Fukushima Daiichi nuclear disaster of 2011"
 
         self._radfacts = Label(self.main_tab, bg="black", fg="#00ff00", font=("Courier New", 18),
-                               text="Radiation Effects: {}\nEquivalent: {}".format(effects, equivalents))
-        self._radfacts.grid(row=1, column=0)
+                               text="Radiation Effects: {}\nEquivalent Radiation: {}".format(effects, equivalents), wraplength=800)
+        self._radfacts.grid(row=1, column=0, sticky="nsew", columnspan=3)
 
 
     # re-attempts the bomb (after an explosion or a successful defusion)
